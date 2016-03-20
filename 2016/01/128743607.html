@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="google" content="notranslate" />
+<link rel="icon" href="/images/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
+
+<title>Upstart 系统初始化过程 - Youmi Tech Blog. </title>
+<script>
+var c = {
+    name: '',
+    url: ''
+}
+</script>
+</head>
+<body>
+
+<div class="header">
+    <div class="center">
+        <h1><a href="/">Youmi Tech Blog.</a></h1>
+        <p>I dream of painting and then I paint my dream.</p>
+    </div>
+    <div class="menu">
+        <a href="/">home</a>
+        <a href="/archives">archives</a>
+    </div>
+</div>
+
+
+<div id="post" class="center">
+
+    <h1>Upstart 系统初始化过程</h1>
+    <p><a href="https://github.com/divisoryang">divisoryang</a> Posted at Jan 26, 2016 . -
+    <a href="/category/uncategorized/">uncategorized</a> -
+    </p>
+
+    <div class="content"><p>Upstart是一个用于替代传统 init 的系统初始化程序。相对于 init 的同步执行，Upstart 是事件驱动、异步工作的。由于是事件驱动， Upstart 提供了传统 init 没法提供的功能，如机器运行时添加或删除U盘；由于异步工作，Upstart 更能充分利用CPU资源，性能更好。</p>
+<p>Ubuntu 是我们常用的开发和服务器系统，当前最新 LTS 使用的是 Upstart，了解 Upstart 可以帮我们解答以下这些疑惑：</p>
+<ul>
+<li>机器启动后的一些初始化脚本应该放在哪里比较合适？</li>
+<li>想要在某个通用服务启动前执行一段代码可以怎样做？</li>
+<li>设置好开机启动的程序运行时网络是否已经配置好？</li>
+<li>硬盘什么时候挂载的？</li>
+<li>在一些重启后某些硬盘内容会消失的云主机里什么时候初始化 flashcache？</li>
+</ul>
+<p>下面介绍一下日常最需要了解 Upstart 的一些方面：</p>
+<h3 id="-">一、基本概念</h3>
+<p>Upstart 的可执行文件就是系统里的 /sbin/init。它事件驱动的特性体现在通过一些事件来触发任务的执行，比如开机后有 startup 事件、启动一个 job 前有 starting xxx（job 的名字）事件、插入一个U盘也会有相应的事件。Upstart 的任务配置一般写在 /etc/init 目录下（其实还有用户的 Upstart 配置，可以放在 $HOME/.init 目录下）。</p>
+<p>Upstart job 的三个类型：</p>
+<ol>
+<li>Task Job： 运行一小会儿就停止的服务。</li>
+<li>Service Job： 一直运行的服务，比如 PHP-FPM、sshd。</li>
+<li>Abstract Job：没有 exec 和 script 的任务， Upstart 不会跟踪他的pid， 常用来设置网络服务。</li>
+</ol>
+<h3 id="-upstart-">二、Upstart 在机器启动时的执行过程</h3>
+<p><img src="https://cloud.githubusercontent.com/assets/2314596/12577547/e2abbdee-c455-11e5-99e4-f825db9f3f6b.png" alt="ubuntu_upstart_procedure"></p>
+<p>在机器做完那些<a href="http://www.yunweipai.com/archives/782.html">加载内核，挂载跟目录等工作</a>后，操作系统会调用 /sbin/init 来接管后续的服务启动过程。</p>
+<ul>
+<li>init 启动后马上发出第一个事件 startup</li>
+<li><p>hostname，mountall 会被 startup 事件触发（在 /etc/init 目录下 grep startup * 就可以看到了！)，也就是一启动就开始分别设置 hostname 和 挂载硬盘。</p>
+<p>  在 mountall.conf 里可以看到它主要运行了 <a href="http://manpages.ubuntu.com/manpages/vivid/man8/mountall.8.html">mountall</a> 程序，这个程序会读取 /lib/init/fstab 和 /etc/fstab 里的配置，按顺序挂载。其中 /lib/init/fstab 里的都是像 /proc /sys 这样的虚拟磁盘。</p>
+<p>  mountall 会发出很多可以触发 Upstart 的事件：</p>
+<pre><code>  emits virtual<span class="hljs-attr">-filesystems</span>
+  emits <span class="hljs-built_in">local</span><span class="hljs-attr">-filesystems</span>
+  emits remote<span class="hljs-attr">-filesystems</span>
+  emits <span class="hljs-literal">all</span><span class="hljs-attr">-swaps</span>
+  emits filesystem
+  emits mounting
+  emits mounted
+</code></pre><p>  每挂载好一个磁盘都会发出一个 mounted 事件，当挂载完 /lib/init/fstab 里的虚拟磁盘后会发出 virtual-filesystems 事件，mountall 继续处理 /etc/fstab 里的配置，期间会发出 remote-filesystems, all-swaps等事件，全部处理完后会发送 local-filesystems 和 filesystem 事件。</p>
+<p>  也就是说，当 Upstart 接收到 filesystem 事件时，配置文件中的磁盘已经挂载好了。</p>
+<p>  mountall 发出的很多事件，有些是以<a href="http://upstart.ubuntu.com/cookbook/#event-types">阻塞的方式</a>发出的，也就是在 mountall 过程中有些别的任务已经被触发并且可能已经完成了。</p>
+</li>
+<li><p>udev.conf 在接收到 virtual-filesystem 时出发，这是一个管理 /dev 下的设备描述的程序。</p>
+<ul>
+<li>udev 导致 upstart-udev-bridge 任务执行，这个任务会设置好 127.0.0.0 这个网络回路地址。</li>
+<li>udev 和 filesystem 事件还是开始网络设置的前提。</li>
+</ul>
+</li>
+<li>在设置网络之前，ufw 的配置也会准备就绪。</li>
+<li>网络和文件系统都准备好后出发 rc-sysinit.conf 里的脚本执行，里面其实就是打开 telinit 程序并传入一个2作为参数，这个程序发出 runlevel 事件。<ul>
+<li>rc.conf 会被 runlevel 事件触发，它会调用 /etc/init.d/rc 2 ， 这是兼容传统 init 的关键步骤。</li>
+<li>其他 job 也会被 runlevel 事件触发，例如 cron、ssh、irqbalance 等。</li>
+</ul>
+</li>
+</ul>
+<h3 id="-init-">三、 和传统 init 的兼容</h3>
+<p>Upstart 兼容传统的 init 也称为 sysV 的启动方式，从上面步骤可以看到在 /etc/init/rc.conf 里调用了 /etc/init.d/rc 2， 这个程序会遍历 /etc/rc2.d 目录下的脚本并执行。</p>
+<p>平时我们启动服务会用到下面这几种命令：</p>
+<pre><code>service <span class="hljs-keyword">x</span> start
+start <span class="hljs-keyword">x</span>
+initctl start <span class="hljs-keyword">x</span>
+</code></pre><p>其中 service 是一个脚本，它的工作原理是先检查 /etc/init 里的配置有没有这个命令要启动的服务，如果没有才到 /etc/init.d 里找到启动那个服务的脚本并执行。如果你通过 apt-get 安装 PHP-FPM 可以发现 /etc/init.d 里的 PHP-FPM 启动脚本并不会被 service php5-fpm start 调用。</p>
+<h3 id="-">参考资料</h3>
+<ul>
+<li><a href="http://upstart.ubuntu.com/cookbook">Upstart cookbook</a></li>
+<li><a href="http://www.yunweipai.com/archives/782.html">Linux操作系统启动过程详解</a></li>
+<li><a href="http://manpages.ubuntu.com/manpages/vivid/man8/mountall.8.html">mountall</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/Udev">Udev</a></li>
+</ul>
+</div>
+
+    <div class="label">
+    </div>
+
+    <div class="comment_list hide" id="disqus_thread"></div>
+    <div id="duoshuo_thread" class="comment_list hide ds-thread" data-thread-key="128743607" data-title="" data-url=""></div>
+
+    <button class="hide" data-id="128743607" id="comment">Add Comments</button>
+
+</div>
+
+<div class="footer">
+    <div class="center">
+        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+    </div>
+</div>
+
+
+<script src="/js/comment.js"></script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="google" content="notranslate" />
+<link rel="icon" href="/images/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
+
+<title>ELK在广告系统监控中的应用 及 Elasticsearch简介 - Youmi Tech Blog. </title>
+<script>
+var c = {
+    name: '',
+    url: ''
+}
+</script>
+</head>
+<body>
+
+<div class="header">
+    <div class="center">
+        <h1><a href="/">Youmi Tech Blog.</a></h1>
+        <p>I dream of painting and then I paint my dream.</p>
+    </div>
+    <div class="menu">
+        <a href="/">home</a>
+        <a href="/archives">archives</a>
+    </div>
+</div>
+
+
+<div id="post" class="center">
+
+    <h1>ELK在广告系统监控中的应用 及 Elasticsearch简介</h1>
+    <p><a href="https://github.com/csyangchen">csyangchen</a> Posted at Feb 29, 2016 . -
+    <a href="/category/uncategorized/">uncategorized</a> -
+    </p>
+
+    <div class="content"><p>ELK是指elastic提供的一整套数据收集，存储，搜索，及展示方案。 由于部署及扩容方便，非常适合小团队快速搭建数据分析平台。ELK分别代指 Elasticsearch，Logstash，Kibana三个产品。</p>
+<ul>
+<li><a href="https://www.elastic.co/products/elasticsearch"><strong>E</strong>lasticsearch</a>: 分布式，实时，全文搜索引擎，最核心的部分，也是接下来主要介绍的内容</li>
+<li><a href="https://www.elastic.co/products/logstash"><strong>L</strong>ogstash</a>: 非常灵活的日志收集工具，不局限于向 Elasticsearch 导入数据，可以定制多种输入，输出，及过滤转换规则</li>
+<li><a href="https://www.elastic.co/products/kibana"><strong>K</strong>ibana</a>: 提供对于 Elasticsearch 数据的搜索及可视化功能。并且支持开发人员自己按需开发插件。</li>
+</ul>
+<h1 id="elk-">ELK在广告系统监控中的应用</h1>
+<p>广告系统对于请求的响应时间非常敏感，此外，对于并发请求数要求也很高。因此，我们需要从请求响应时间，以及QPS两个指标，来检测系统的性能; 同时，为了定位瓶颈，我们需要把这两个指标，分拆到请求处理过程中的每个组件去看。</p>
+<p>此外，为了优化全球用户访问的速度，我们在全球部署了多个节点。因此，整个系统不是在一个内网环境，对监控数据的实时收集提出了考验。</p>
+<p>因此，我们需要一套灵活的监控统计库，能够非侵入的注册到业务代码中; 并且在一个统一的入口，实时监控每个节点的运行情况。</p>
+<p><img src="https://cloud.githubusercontent.com/assets/839287/13384488/f2339846-ded0-11e5-8b62-368e9d4de3de.png" alt="elk"></p>
+<p>我们采用方案是:</p>
+<ul>
+<li>每个节点，有一个 Collector，负责收集监控数据，按照节点/服务/时间维度做聚合，实时写入 Kinesis 队列</li>
+<li>Logstash 将 Kinesis 中的监控数据，实时导入到 Elasticsearch</li>
+<li>Kibana 后台上，通过定制查询图表，可以统计对比每个节点/服务/组件的监控数据</li>
+<li>我们采用默认的 Logstash 日志导入策略，按天索引，使用<a href="https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html">curator</a>工具，定期对历史数据删除/优化。</li>
+<li>此外，通过 <a href="https://www.elastic.co/products/watcher">Watcher</a> 插件，定制告警信息，从而在系统出现问题时及时处理。</li>
+</ul>
+<p>这套机制，很好地满足了我们对于系统监控的需求，帮助我们分析，定位优化系统瓶颈。</p>
+<h1 id="elasticsearch-">Elasticsearch简介</h1>
+<p>Elasticsearch 是一个分布式，实时，全文搜索引擎。所有操作都是通过 RESTful 接口实现; 其底层实现是基于 Lucene 全文搜索引擎。数据以JSON文档的格式存储索引，不需要预先规定范式。</p>
+<p>和传统数据库的术语对比一下，也许能够帮助我们对 Elasticsearch 有一个更加感性的认识</p>
+<table>
+<thead>
+<tr>
+<th>RDS</th>
+<th>Elasticsearch</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>database</td>
+<td>index</td>
+<td></td>
+</tr>
+<tr>
+<td>table</td>
+<td>type</td>
+<td></td>
+</tr>
+<tr>
+<td>primary key</td>
+<td>id</td>
+<td></td>
+</tr>
+<tr>
+<td>row</td>
+<td>JSON document</td>
+<td>文档是最基本的数据存储单元，因此也可以称 Elasticsearch 为文档型 NoSQL 数据库</td>
+</tr>
+<tr>
+<td>column</td>
+<td>field</td>
+<td></td>
+</tr>
+<tr>
+<td>schema</td>
+<td>mapping</td>
+<td>可以支持动态范式，也可以将范式指定下来，从而优化对数据索引和查询</td>
+</tr>
+<tr>
+<td>index</td>
+<td>(all)</td>
+<td>所有的字段都是被索引的，因此不需要手动指定索引</td>
+</tr>
+<tr>
+<td>SQL</td>
+<td>query DSL</td>
+<td>不同于我们习惯的SQL语句，需要构造繁冗的JSON参数来实现复杂的数据统计查询功能</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">使用简介</h2>
+<p>所有操作都是通过RESTfull接口完成。请求URI指定了文档的&quot;路径&quot;。
+注意到语义通过请求的HTTP方法不同区分开来:</p>
+<ul>
+<li>创建 <code>POST /{index}/{type} {&quot;field&quot;: &quot;value&quot;, ...}</code></li>
+<li>创建/更新 <code>PUT /{index}/{type}/{id} {&quot;field&quot;: &quot;value&quot;, ...}</code></li>
+<li>判断一个文档是否存在 <code>HEAD /{index}/{type}/{id}</code></li>
+<li>获取一个文档 <code>GET /{index}/{type}/{id}</code></li>
+<li>删除 <code>DELETE /{index}/{type}/{id}</code></li>
+</ul>
+<p>说明一下<code>POST</code>和<code>PUT</code>的<a href="http://stackoverflow.com/questions/630453/put-vs-post-in-rest">区别</a>: <code>POST</code> 永远是创建新的。<code>PUT</code> 可以表示创建，但是如果指定的URI存在，则含义为更新。换句话说，一个<code>PUT</code>请求，重复执行，结果应该是一样的。因此，在 Elasticsearch 的API，<code>POST</code> 表示创建新的文档，并由 Elasticsearch 自动生成<code>id</code>; 而 <code>PUT</code> 方法需要指定文档<code>id</code>，含义为&quot;创建，若存在则更新&quot;。</p>
+<p>另外，需要提一下版本的概念。因为 Elasticsearch 中的文档是不可变的(immutable)，所以每个文档会有一个 版本号(version)字段，每次更新，实际上是将旧的版本标记未删除，并创建了一个新版本(版本号+1)。这个开销是很大的。因此，在实际使用中，需要尽量避免频繁的更新操作。</p>
+<p>为了满足一些复杂的数据统计，仅仅上述的增删改查是不够的，为了充分使用 Elasticsearch的搜索功能，还需要学习 query DSL 的使用。query DSL 写起来比较复杂，这里仅仅列举一下和SQL关键字的对应。具体使用还得参考文档。</p>
+<pre><code>SQL            | query DSL
+-------        | --------
+=              | {<span class="hljs-string">"term"</span>: {field: val}
+IN             | {<span class="hljs-string">"terms"</span>: {field: [val, ...]}
+LIKE           | {<span class="hljs-string">"wildcard:"</span> {field: pattern}}
+BETWEEN AND    | {<span class="hljs-string">"range"</span>: {field: {<span class="hljs-string">"gt"</span>: val, <span class="hljs-string">"lt"</span>: val}}}
+AND / OR / NOT | {<span class="hljs-string">"bool"</span>: {<span class="hljs-string">"must"</span>/<span class="hljs-string">"should"</span>/<span class="hljs-string">"must_not"</span>: ...}
+Aggregations   | {<span class="hljs-string">"aggs"</span>: ...}
+JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-string">"has_child"</span>/<span class="hljs-string">"has_parent"</span>: ...}
+</code></pre><p>随便列两个查询语句，感受一下:</p>
+<p><code>SELECT * FROM megacorp.employee WHERE age &gt; 30 AND last_name = &quot;smith&quot;</code></p>
+<pre><code>GET /megacorp/employee/_search
+{
+  <span class="hljs-string">"query"</span>: {
+    <span class="hljs-string">"filtered"</span>: {
+      <span class="hljs-string">"filter"</span>: {
+        <span class="hljs-string">"range"</span>: { <span class="hljs-string">"age"</span>: { <span class="hljs-string">"gt"</span>: <span class="hljs-number">30</span> } }
+      },
+      <span class="hljs-string">"query"</span>: {
+        <span class="hljs-string">"match"</span>: {
+          <span class="hljs-string">"last_name"</span>: <span class="hljs-string">"smith"</span>
+        }
+      }
+    }
+  }
+}
+</code></pre><p><code>SELECT interests，avg(age) FROM megacorp.employee GROUP BY interests</code></p>
+<pre><code>GET /megacorp/employee/_search
+{
+  <span class="hljs-string">"aggs"</span>: {
+    <span class="hljs-string">"all_interests"</span>: {
+      <span class="hljs-string">"terms"</span>: { <span class="hljs-string">"field"</span>: <span class="hljs-string">"interests"</span> },
+      <span class="hljs-string">"aggs"</span>: {
+        <span class="hljs-string">"avg_age"</span>: {
+          <span class="hljs-string">"avg"</span>: {
+            <span class="hljs-string">"field"</span>: <span class="hljs-string">"age"</span>
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre><p>从个人的使用经验来说，熟练掌握 query DSL 的难度还是不小的 (毕竟大家都习惯的SQL的简洁直接)。此外，由于输入输出都是嵌套很深的JSON，解析起来也比较麻烦。为了降低使用门槛，一般都会有从SQL翻译的组件。比如Hive之于Hadoop，SparkSQL 之于 Spark。<a href="http://github.com/NLPchina/elasticsearch-sql">elasticsearch-sql</a>这个项目，提供了类似了SQL翻译功能。</p>
+<p>当然，Elasticsearch 最突出的地方在于对于全文搜索的支持。全文搜索的原理，以及在 Elasticsearch中具体如何全文搜索，这里略去不表。下面介绍下 Elasticsearch 集群的实现。</p>
+<h2 id="elasticsearch-">Elasticsearch 集群</h2>
+<p>Elasticsearch 是分布式的架构，可以通过新增节点的方式水平扩容，并提供一定的容错性。那么，它是怎么做到的呢? 我们一个一个概念，细细道来:</p>
+<ul>
+<li><p><strong>节点(node)</strong>: 是一个独立的 Elasticsearch 运行实例。可以是一台机器上多个实例，当然更常见的选择是部署在不同的机器上。多个互通节点在一起组成了一个 <strong>集群 (cluster)</strong>。不同于常见的master/slave集群架构，Elasticsearch 集群中的节点是同构的，每个节点都可以处理请求，并将自己不能处理的请求&quot;重定向&quot;到目标节点。</p>
+</li>
+<li><p><strong>索引(index)</strong>: 一个索引，分成了多个分片。当将文档写入一个索引时，根据id做切割，交由某个具体的分片去完成写入操作。因此越多的分片数，提供了更好的并发写入性能。分片数目在索引创建就不能更改。</p>
+</li>
+<li><p><strong>分片(shard)</strong>: 即一个 Lucene 实例，从数据库的角度来理解，可以视为一个分区(partition)。</p>
+</li>
+<li><p><strong>镜像分片(replica)</strong>: 分片由一个 主分片 (primary shard)，和可配置数目的多个镜像分片组成。</p>
+<ul>
+<li>顾名思义，镜像分片 的数据内容和 主分片 保持数据同步。数据写入请求在主分片被完成，并由主分片将写入数据推送(push)到其镜像分片去。</li>
+<li>在多节点集群里，同一分片的主分片和镜像分片被分散到了不同的节点。同一个分片里文档的查询请求，既可以在主分片所在节点完成，也可以在镜像分片节点完成。</li>
+<li>此外，当主分片所在节点失效时，会将其中一个镜像分片提升为主分片。</li>
+<li>因此，更高的分片镜像数目，提供了更好的查询效率，以及更好的容错机制。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://cloud.githubusercontent.com/assets/839287/13384489/f2344cdc-ded0-11e5-8fe0-93c8f634464e.png" alt="cluster"></p>
+<p>如图，三个节点构成的集群。有两个索引(A，B)。每个索引设置为3个分片，每个分片镜像数为1:</p>
+<ul>
+<li>由于镜像分片会在节点间充分平衡，因此，当任意一个节点失效时，都不会导致数据丢失</li>
+<li>由于索引个分片均匀分布到三个节点，因此，写入时，总体上可以实现三倍每个节点的写入吞吐</li>
+<li>对于每个索引的查询，都可以利用到每台节点的计算能力</li>
+</ul>
+<h2 id="lucene-">Lucene 是怎么工作的?</h2>
+<p>前面我们提到，Elasticsearch 是构建在 Lucene 之上的。那么，Lucene (也就是每个分片) 是如何实现数据的实时写入和查询的呢?</p>
+<p>一个 Lucene 由多个 segment 构成。每个 segment 自构建索引信息。在查询的时候，先由分发到每个 segment 执行，然后将结果汇总。数据写入时，是按照 segment 来组织的。为了提高写入速度，数据先写入内存，然后在定期刷回磁盘(commit)。</p>
+<p>每个 segment 数据是不可变的，因此删除的时候仅仅标记为删除，相应的数据并没有彻底清除。在写入的过程中，会定期将 segment 的数据合并，在这个合并的过程中删除的数据才真正被清理掉。这也是为什么频繁更新会对性能不好的原因。最优的情况下，每个 Lucene 只有一个 segment，从而所有查询都不需要经过再次聚合。我们也可以手动触发 segment 合并，从而提高单个 Lucene 的查询性能。</p>
+<p>写入以及合并的示意图:</p>
+<p><img src="https://cloud.githubusercontent.com/assets/839287/13384491/f239c6b2-ded0-11e5-8f12-f51a46efb0ea.png" alt="seg1">
+<img src="https://cloud.githubusercontent.com/assets/839287/13384492/f253488a-ded0-11e5-8865-a2be651a9ac0.png" alt="seg2"></p>
+<p>如果要做类比的话，我们可以将写入理解为数据库系统 Write-Ahead-Logging (WAL) 的过程。只不过，这里写入的数据都是不变的，因此可以在写入的时候被非常高效地索引，并直接基于这些&quot;日志&quot;(即segments)查询。</p>
+<h2 id="-">索引维度的切割</h2>
+<p>由于每个索引是固定分片数的，为了优化查询，每个分片 (记得是 Lucene 实例) 索引的数据不能够无限增长。很多时候，我们的写入的是按天分的日志数据。一般的做法是，按天索引。在时间维度上利用索引进行分区，Logstash 默认为 <code>logstash-2016-02-01，logstash-2016-02-02，...</code> 这样按天分表。在查询的时候，可以指定多个索引查询，如<code>logstash-*</code>索引匹配。在有时间范围限定查询的时候，可以提前对于潜在索引过滤，从而减少执行查询所涉及的索引数目。这也是常见的数据库分区查询优化的一个手段。</p>
+<h2 id="-">参考</h2>
+<ul>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/guide/master/">Elasticsearch: The Definitive Guide</a> 官方文档，啃透了 Elasticsearch 也就熟悉了</li>
+<li><a href="http://www.slideshare.net/gugod/elasticsearch-19877436">Elasticsearch 實戰介紹</a> 以及其后宝贵的引用</li>
+</ul>
+</div>
+
+    <div class="label">
+    </div>
+
+    <div class="comment_list hide" id="disqus_thread"></div>
+    <div id="duoshuo_thread" class="comment_list hide ds-thread" data-thread-key="137134732" data-title="" data-url=""></div>
+
+    <button class="hide" data-id="137134732" id="comment">Add Comments</button>
+
+</div>
+
+<div class="footer">
+    <div class="center">
+        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+    </div>
+</div>
+
+
+<script src="/js/comment.js"></script>
+</body>
+</html>
