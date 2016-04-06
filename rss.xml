@@ -1,4 +1,70 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Sun, 20 Mar 2016 12:52:42 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Sun, 20 Mar 2016 12:52:42 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<p>ELK是指elastic提供的一整套数据收集，存储，搜索，及展示方案。 由于部署及扩容方便，非常适合小团队快速搭建数据分析平台。ELK分别代指 Elasticsearch，Logstash，Kibana三个产品。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Wed, 06 Apr 2016 14:17:50 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Wed, 06 Apr 2016 14:17:50 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<h3 id="ansible-dynamic-inventory-">Ansible Dynamic Inventory 解决的问题</h3>
+<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。如下：</p>
+<pre><code><span class="hljs-string">[webservers]</span>
+<span class="hljs-number">111.222.333.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
+</code></pre><p>假如你有很多台机器，且机器经常变更导致IP时常变换，你还想把IP逐个写入 <code>/etc/ansible/hosts</code> 就不现实了。你也许会问，若不把IP写进 <code>/etc/ansible/hosts</code>，那不是没法用 <code>ansible</code> 指挥这些机器？
+感谢 <code>Ansible Dynamic Inventory</code>， 如果我们能通过编程等手段获取变更机器的IP，我们还是有办法实现的。</p>
+<hr>
+<h3 id="dynamic-inventory-">Dynamic Inventory 的原理</h3>
+<ul>
+<li>通过编程的方式,也就是动态获取机器的 json 信息;</li>
+<li>Ansible 通过解析这串 json 字符串;</li>
+</ul>
+<pre><code>ansible -<span class="hljs-selector-tag">i</span> yourprogram<span class="hljs-selector-class">.py</span> -m raw  -<span class="hljs-selector-tag">a</span> <span class="hljs-string">'cd /home'</span>
+</code></pre><p>Ansible dDynamic Inventory 对程序返回的 json 的转义是这样的：</p>
+<pre><code>{<span class="hljs-attr">"devtest-asg"</span>: {<span class="hljs-attr">"hosts"</span>: [<span class="hljs-string">"172.31.21.164"</span>], <span class="hljs-attr">"vars"</span>: {<span class="hljs-attr">"ansible_ssh_port"</span>: <span class="hljs-number">12306</span>}}}
+</code></pre><p>翻译一下就是  <code>/etc/ansible/hosts</code> 中的:</p>
+<pre><code><span class="hljs-string">[devtest-asg]</span>
+<span class="hljs-number">172.31.21.164</span> ansible_ssh_port=<span class="hljs-number">12306</span>
+</code></pre><hr>
+<h3 id="-">一个实战的例子</h3>
+<p>官方文档对 Inventory 仅作概念性描述，阅读完后仍是一头雾水，不知如何下手。
+让我们用一个例子来豁然开朗吧。
+我们使用 AWS 的 AutoScaling Group，以下简称 ASG，ASG 会在某种自定义的条件下会自动开启和关闭机器，这给我们在辨别IP，定位机器的时候造成困扰。因此我们需要　<code>Ansible Dynamic Inventory</code></p>
+<p>我们使用 AWS 的｀boto｀库来获取ASG的实例信息.以下程序(get_host.py)中要实现的方法就是列出返回机器信息的 json 串。</p>
+<pre><code class="lang-python"><span class="hljs-comment">#!/usr/bin/env python</span>
+<span class="hljs-comment"># -*- coding: utf-8 -*-</span>
+<span class="hljs-keyword">import</span> json
+<span class="hljs-keyword">import</span> boto
+<span class="hljs-keyword">import</span> boto.ec2
+<span class="hljs-keyword">import</span> boto.ec2.autoscale
+
+<span class="hljs-type">AWS_REGION</span> = '<span class="hljs-type">BBB</span>'
+<span class="hljs-type">AWS_ACCESS_KEY</span> = 'xxxx'
+<span class="hljs-type">AWS_SECRET_KEY</span> = 'yyy'
+
+<span class="hljs-literal">result</span> = {}
+def getData():
+    conn_as = boto.ec2.autoscale.connect_to_region(
+            'cn-north-<span class="hljs-number">1</span>',
+            aws_access_key_id=<span class="hljs-type">AWS_ACCESS_KEY</span>,
+            aws_secret_access_key=<span class="hljs-type">AWS_SECRET_KEY</span>)
+    group = conn_as.get_all_groups(names=['devtest-asg'])[<span class="hljs-number">0</span>]
+    conn_ec2 = boto.ec2.connect_to_region(
+            <span class="hljs-type">AWS_REGION</span>,
+            aws_access_key_id=<span class="hljs-type">AWS_ACCESS_KEY</span>,
+            aws_secret_access_key=<span class="hljs-type">AWS_SECRET_KEY</span>)
+
+    instance_ids = [i.instance_id <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> group.instances]
+    reservations = conn_ec2.get_all_instances(instance_ids)
+    instances = [i <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> reservations <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> r.instances]
+
+    <span class="hljs-literal">result</span>['devtest-asg'] = {}
+    <span class="hljs-literal">result</span>['devtest-asg']['hosts'] = []
+    <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> reservations:
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> r.instances:
+            <span class="hljs-literal">result</span>['devtest-asg']['hosts'].append('%s' % i.private_ip_address)
+            <span class="hljs-literal">result</span>['devtest-asg']['vars'] = {'ansible_ssh_port': <span class="hljs-number">36000</span>}
+
+def getlists():
+    getData()
+    print json.dumps(<span class="hljs-literal">result</span>)
+
+getlists()
+</code></pre>
+<p>执行以下命令就可以愉快地使用 Ansible 了，其中 <code>devtest-asg</code> 是ASG的别名：</p>
+<pre><code>ansible -<span class="hljs-selector-tag">i</span> get_host<span class="hljs-selector-class">.py</span>  devtest-asg -m raw -<span class="hljs-selector-tag">a</span> <span class="hljs-string">'ls /'</span>
+</code></pre>]]></description><link>http://tech.youmi.net/2016/04/145599925.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/145599925.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Wed, 06 Apr 2016 14:15:49 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>ELK是指elastic提供的一整套数据收集，存储，搜索，及展示方案。 由于部署及扩容方便，非常适合小团队快速搭建数据分析平台。ELK分别代指 Elasticsearch，Logstash，Kibana三个产品。</p>
 <ul>
 <li><a href="https://www.elastic.co/products/elasticsearch"><strong>E</strong>lasticsearch</a>: 分布式，实时，全文搜索引擎，最核心的部分，也是接下来主要介绍的内容</li>
 <li><a href="https://www.elastic.co/products/logstash"><strong>L</strong>ogstash</a>: 非常灵活的日志收集工具，不局限于向 Elasticsearch 导入数据，可以定制多种输入，输出，及过滤转换规则</li>
@@ -169,7 +235,7 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 <li><a href="https://www.elastic.co/guide/en/elasticsearch/guide/master/">Elasticsearch: The Definitive Guide</a> 官方文档，啃透了 Elasticsearch 也就熟悉了</li>
 <li><a href="http://www.slideshare.net/gugod/elasticsearch-19877436">Elasticsearch 實戰介紹</a> 以及其后宝贵的引用</li>
 </ul>
-]]></description><link>http://tech.youmi.net/2016/02/137134732.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/02/137134732.html</guid><dc:creator><![CDATA[csyangchen]]></dc:creator><pubDate>Wed, 09 Mar 2016 02:48:21 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>稍微“古老”一点的互联网时代，我们一直用短信，邮件来进行消息通知，特别是服务器报警这些信息。短信虽好，但是太贵，而且没办法分类分组分级别，后来我们发现了Pushover，很好地解决了我们的问题。</p>
+]]></description><link>http://tech.youmi.net/2016/02/137134732.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/02/137134732.html</guid><dc:creator><![CDATA[csyangchen]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:59:21 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>稍微“古老”一点的互联网时代，我们一直用短信，邮件来进行消息通知，特别是服务器报警这些信息。短信虽好，但是太贵，而且没办法分类分组分级别，后来我们发现了Pushover，很好地解决了我们的问题。</p>
 <p>本来我们是一直用Pushover的，但是由于众所周知的原因，Pushover的Android版本在国内没法用，而微信又满足不了我们的需求（分组，分级别推送消息），因此我们自己开发了一个Pushover的替代版：</p>
 <p><a href="https://www.alertover.com">https://www.alertover.com</a></p>
 <p>免费实用。
@@ -177,7 +243,7 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 同时，我们即将开源Alertover的各类客户端源码。</p>
 <p>使用过程中有遇到任何问题，可以发邮件给我们 alertover@youmi.net，或者加我们的官方用户QQ群：313270450</p>
 <p><img src="https://cloud.githubusercontent.com/assets/1064207/12672140/1588e560-c6af-11e5-9aa8-f43509ffae9e.png" alt="www alertover com"></p>
-]]></description><link>http://tech.youmi.net/2016/01/129715411.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/01/129715411.html</guid><dc:creator><![CDATA[ruitao]]></dc:creator><pubDate>Fri, 29 Jan 2016 10:11:17 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Upstart是一个用于替代传统 init 的系统初始化程序。相对于 init 的同步执行，Upstart 是事件驱动、异步工作的。由于是事件驱动， Upstart 提供了传统 init 没法提供的功能，如机器运行时添加或删除U盘；由于异步工作，Upstart 更能充分利用CPU资源，性能更好。</p>
+]]></description><link>http://tech.youmi.net/2016/01/129715411.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/01/129715411.html</guid><dc:creator><![CDATA[ruitao]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:59:03 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Upstart是一个用于替代传统 init 的系统初始化程序。相对于 init 的同步执行，Upstart 是事件驱动、异步工作的。由于是事件驱动， Upstart 提供了传统 init 没法提供的功能，如机器运行时添加或删除U盘；由于异步工作，Upstart 更能充分利用CPU资源，性能更好。</p>
 <p>Ubuntu 是我们常用的开发和服务器系统，当前最新 LTS 使用的是 Upstart，了解 Upstart 可以帮我们解答以下这些疑惑：</p>
 <ul>
 <li>机器启动后的一些初始化脚本应该放在哪里比较合适？</li>
@@ -241,4 +307,4 @@ initctl start <span class="hljs-keyword">x</span>
 <li><a href="http://manpages.ubuntu.com/manpages/vivid/man8/mountall.8.html">mountall</a></li>
 <li><a href="https://zh.wikipedia.org/wiki/Udev">Udev</a></li>
 </ul>
-]]></description><link>http://tech.youmi.net/2016/01/128743607.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/01/128743607.html</guid><dc:creator><![CDATA[divisoryang]]></dc:creator><pubDate>Fri, 29 Jan 2016 03:38:19 GMT</pubDate></item></channel></rss>
+]]></description><link>http://tech.youmi.net/2016/01/128743607.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/01/128743607.html</guid><dc:creator><![CDATA[divisoryang]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:58:50 GMT</pubDate></item></channel></rss>
