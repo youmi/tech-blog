@@ -1,4 +1,95 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Wed, 06 Apr 2016 14:26:58 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Wed, 06 Apr 2016 14:26:58 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Mon, 25 Apr 2016 11:57:38 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Mon, 25 Apr 2016 11:57:38 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。</p>
+<p>现实中，我们就碰到了这样的需求：实时汇总线上多台服务器的 Nginx 日志。Flume 立功了。</p>
+<h1 id="flume-">Flume 简介</h1>
+<p><a href="https://flume.apache.org/"><strong>F</strong>lume</a> 是一个分布式，可靠高效的日志收集系统，它允许用户自定义数据传输模型，因此可扩展性也强。也有较强的容错和恢复机制.
+以下是几个重要的概念</p>
+<ul>
+<li>Event：Event 是 Flume 数据传输的基本单元。flume 以事件的形式将数据从源头传送到最终的目的。</li>
+<li>Agent：Agent包含 Sources, Channels, Sinks 和其他组件，它利用这些组件将events从一个节点传输到另一个节点
+或最终目的。</li>
+<li>Source：Source负责接收events，并将events批量的放到一个或多个Channels。</li>
+<li>Channel：Channel位于 Source 和 Sink 之间，用于缓存进来的events，当Sink成功的将events发送到下一跳的channel或最终目的，events从Channel移除。</li>
+<li>Sink：Sink 负责将 events 传输到下一跳或最终目的，成功完成后将events从channel移除。</li>
+</ul>
+<p><img src="http://zheng-ji.info/images/2016/04/flume.jpg" alt="flume"></p>
+<ul>
+<li>Source 就有 Syslog Source, Kafka Source,HTTP Source, Exec Source Avro Source 等。</li>
+<li>Sink 有 Kafka Sink, Avro Sink, File Roll Sink, HDFS Sink 等。</li>
+<li>Channel 有 Memory Channel,File Channel 等</li>
+</ul>
+<p>它提供了一个骨架，以及多种 Source, Sink, Channel, 让你设计合适的数据模型。事实上也可以多个 Flume 联动完成，就像地铁的车厢一样。</p>
+<h1 id="-">定义数据流模型</h1>
+<p>回到我们开头的场景,我们要将多台服务器的 Nginx 日志进行汇总分析，</p>
+<p>分成两个 flume 来实现</p>
+<ul>
+<li>Flume1 数据流是 Exec Source -&gt; Memory Channel -&gt; Avro Sink,部署在业务机器上</li>
+<li>Flume2 数据流是 Avro Source -&gt; Memory Channel -&gt; FileRoll Sink</li>
+</ul>
+<p><img src="http://zheng-ji.info/images/2016/04/flume1toflume2.jpg" alt="flume"></p>
+<h1 id="-">需要的准备</h1>
+<p>你需要安装</p>
+<ul>
+<li>下载 <a href="https://flume.apache.org/download.html">Flume</a></li>
+<li>安装 JavaSDk,并在下载解压之后的 conf/flume-env.sh，配置</li>
+</ul>
+<pre><code class="lang-sh"><span class="hljs-meta"># 我用的是oracle-java-8</span>
+export JAVA_HOME=<span class="hljs-meta-keyword">/usr/</span>lib<span class="hljs-meta-keyword">/jvm/</span>java<span class="hljs-number">-8</span>-oracle<span class="hljs-meta-keyword">/jre/</span>
+</code></pre>
+<ul>
+<li>思考你的数据流动模型，编写配置，如上文所说的Flume1, tail2avro.conf  ：</li>
+</ul>
+<pre><code>agent<span class="hljs-selector-class">.sources</span> = s1
+agent<span class="hljs-selector-class">.channels</span> = c1
+agent<span class="hljs-selector-class">.sinks</span> = k1
+
+agent<span class="hljs-selector-class">.sources</span><span class="hljs-selector-class">.s1</span><span class="hljs-selector-class">.type</span>=exec
+agent<span class="hljs-selector-class">.sources</span><span class="hljs-selector-class">.s1</span><span class="hljs-selector-class">.command</span>=tail -F &lt;Your File Path&gt;
+agent<span class="hljs-selector-class">.sources</span><span class="hljs-selector-class">.s1</span><span class="hljs-selector-class">.channels</span>=c1
+
+agent<span class="hljs-selector-class">.channels</span><span class="hljs-selector-class">.c1</span><span class="hljs-selector-class">.type</span>=memory
+agent<span class="hljs-selector-class">.channels</span><span class="hljs-selector-class">.c1</span><span class="hljs-selector-class">.capacity</span>=<span class="hljs-number">10000</span>
+agent<span class="hljs-selector-class">.channels</span><span class="hljs-selector-class">.c1</span><span class="hljs-selector-class">.transactionCapacity</span>=<span class="hljs-number">10000</span>
+
+agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-class">.k1</span><span class="hljs-selector-class">.type</span> = avro
+agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-class">.k1</span><span class="hljs-selector-class">.hostname</span> = &lt;Your Target Address&gt;
+agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-class">.k1</span><span class="hljs-selector-class">.port</span> = &lt;Your Target Port&gt;
+agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-class">.k1</span><span class="hljs-selector-class">.channel</span>=c1
+</code></pre><p>Flume2 中的 avro2file.conf</p>
+<pre><code><span class="hljs-built_in">agent</span>.sources = s1
+<span class="hljs-built_in">agent</span>.channels = c1
+<span class="hljs-built_in">agent</span>.sinks = k1
+
+<span class="hljs-built_in">agent</span>.sources.s1.<span class="hljs-built_in">type</span> = avro
+<span class="hljs-built_in">agent</span>.sources.s1.bind = &lt;Your Address&gt;
+<span class="hljs-built_in">agent</span>.sources.s1.port = &lt;Your Port&gt;
+<span class="hljs-built_in">agent</span>.sources.s1.channels = c1
+
+<span class="hljs-built_in">agent</span>.sinks.k1.<span class="hljs-built_in">type</span> = file_roll
+<span class="hljs-built_in">agent</span>.sinks.k1.sink.directory = /data/<span class="hljs-built_in">log</span>/ngxlog
+<span class="hljs-meta"># 滚动间隔</span>
+<span class="hljs-built_in">agent</span>.sinks.k1.sink.rollInterval = <span class="hljs-number">86400</span>
+<span class="hljs-built_in">agent</span>.sinks.k1.channel = c1
+
+<span class="hljs-built_in">agent</span>.channels.c1.<span class="hljs-built_in">type</span> = memory
+<span class="hljs-meta"># 队列里 Event 的容量</span>
+<span class="hljs-built_in">agent</span>.channels.c1.capacity = <span class="hljs-number">10000</span>
+<span class="hljs-built_in">agent</span>.channels.c1.transactionCapacity = <span class="hljs-number">10000</span>
+<span class="hljs-built_in">agent</span>.channels.c1.keep-<span class="hljs-built_in">alive</span> = <span class="hljs-number">60</span>
+</code></pre><ul>
+<li>启动运行</li>
+</ul>
+<pre><code># 启动flume1
+bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/tail2avro.<span class="hljs-keyword">conf</span> \
+-Dflume.root.logger=WARN
+
+# 启动flume2
+<span class="hljs-keyword">in</span>/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/avro2file.<span class="hljs-keyword">conf</span> \
+-Dflume.root.logger=INFO
+</code></pre><h2 id="-">参考</h2>
+<ul>
+<li><a href="https://flume.apache.org/FlumeUserGuide.html">FlumeUserGuide</a> 官方的 FlumeUserGuide</li>
+</ul>
+]]></description><link>http://tech.youmi.net/2016/04/150658153.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/150658153.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Mon, 25 Apr 2016 11:57:17 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
 <pre><code><span class="hljs-string">[webservers]</span>
 <span class="hljs-number">111.222.333.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
 </code></pre><p>假如你有很多台机器，且机器经常变更导致IP时常变换，你还想把IP逐个写入 <code>/etc/ansible/hosts</code> 就不现实了。你也许会问，若不把IP写进 <code>/etc/ansible/hosts</code>，那不是没法用 <code>ansible</code> 指挥这些机器？
