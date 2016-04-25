@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Mon, 25 Apr 2016 11:57:38 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Mon, 25 Apr 2016 11:57:38 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Mon, 25 Apr 2016 12:21:24 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Mon, 25 Apr 2016 12:21:24 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。</p>
 <p>现实中，我们就碰到了这样的需求：实时汇总线上多台服务器的 Nginx 日志。Flume 立功了。</p>
 <h1 id="flume-">Flume 简介</h1>
 <p><a href="https://flume.apache.org/"><strong>F</strong>lume</a> 是一个分布式，可靠高效的日志收集系统，它允许用户自定义数据传输模型，因此可扩展性也强。也有较强的容错和恢复机制.
@@ -23,7 +23,7 @@
 <p>分成两个 flume 来实现</p>
 <ul>
 <li>Flume1 数据流是 Exec Source -&gt; Memory Channel -&gt; Avro Sink,部署在业务机器上</li>
-<li>Flume2 数据流是 Avro Source -&gt; Memory Channel -&gt; FileRoll Sink</li>
+<li>Flume2 数据流是 Avro Source -&gt; Memory Channel -&gt; FileRoll Sink,部署在目标机器上</li>
 </ul>
 <p><img src="http://zheng-ji.info/images/2016/04/flume1toflume2.jpg" alt="flume"></p>
 <h1 id="-">需要的准备</h1>
@@ -83,13 +83,13 @@ bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hl
 -Dflume.root.logger=WARN
 
 # 启动flume2
-<span class="hljs-keyword">in</span>/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/avro2file.<span class="hljs-keyword">conf</span> \
+bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/avro2file.<span class="hljs-keyword">conf</span> \
 -Dflume.root.logger=INFO
 </code></pre><h2 id="-">参考</h2>
 <ul>
 <li><a href="https://flume.apache.org/FlumeUserGuide.html">FlumeUserGuide</a> 官方的 FlumeUserGuide</li>
 </ul>
-]]></description><link>http://tech.youmi.net/2016/04/150658153.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/150658153.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Mon, 25 Apr 2016 11:57:17 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
+]]></description><link>http://tech.youmi.net/2016/04/150658153.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/150658153.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Mon, 25 Apr 2016 12:18:29 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
 <pre><code><span class="hljs-string">[webservers]</span>
 <span class="hljs-number">111.222.333.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
 </code></pre><p>假如你有很多台机器，且机器经常变更导致IP时常变换，你还想把IP逐个写入 <code>/etc/ansible/hosts</code> 就不现实了。你也许会问，若不把IP写进 <code>/etc/ansible/hosts</code>，那不是没法用 <code>ansible</code> 指挥这些机器？

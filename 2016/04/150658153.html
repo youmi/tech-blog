@@ -63,7 +63,7 @@ var c = {
 <p>分成两个 flume 来实现</p>
 <ul>
 <li>Flume1 数据流是 Exec Source -&gt; Memory Channel -&gt; Avro Sink,部署在业务机器上</li>
-<li>Flume2 数据流是 Avro Source -&gt; Memory Channel -&gt; FileRoll Sink</li>
+<li>Flume2 数据流是 Avro Source -&gt; Memory Channel -&gt; FileRoll Sink,部署在目标机器上</li>
 </ul>
 <p><img src="http://zheng-ji.info/images/2016/04/flume1toflume2.jpg" alt="flume"></p>
 <h1 id="-">需要的准备</h1>
@@ -123,7 +123,7 @@ bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hl
 -Dflume.root.logger=WARN
 
 # 启动flume2
-<span class="hljs-keyword">in</span>/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/avro2file.<span class="hljs-keyword">conf</span> \
+bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/avro2file.<span class="hljs-keyword">conf</span> \
 -Dflume.root.logger=INFO
 </code></pre><h2 id="-">参考</h2>
 <ul>
