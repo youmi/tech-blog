@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+{{ post.title }} | {{ data.config.title }}
+{% endblock %}
+
+{% block content %}
+<div id="post" class="center">
+
+    <h1>{{ post.title }}</h1>
+
+    <p><a href="{{ post.author.url }}">{{ post.author.name }}</a> Posted at {{ helper.time(post.created, 'MMM DD, YYYY') }} . -
+
+    {% for category in post.categories %}
+    <a href="{{ category.url }}">{{ category.name}}</a> -
+    {% endfor %}
+    </p>
+
+    <div class="content">{% autoescape false %}{{ post.body }}{% endautoescape %}</div>
+
+    {% if post.tags.length %}
+    <div class="label">
+    {% for tag in post.tags %}
+    <div><a href="{{ tag.url }}">#{{ tag.name }}</a></div>
+    {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="relate">
+    {% if post.prev %}
+    {% set prev = helper.post(post.prev) %}
+    <a rel="prev" href="{{ prev.url }}">← {{ prev.title }}</a>
+    {% endif %}
+
+    {% if post.next %}
+    {% set next = helper.post(post.next) %}
+    <a rel="next" href="{{ next.url }}">{{ next.title }} →</a>
+    {% endif %}
+    </div>
+
+    <div class="comment_list hide" id="disqus_thread"></div>
+    <div id="duoshuo_thread" class="comment_list hide ds-thread" data-thread-key="{{ post.id }}" data-title="" data-url=""></div>
+
+    <button class="hide" data-id="{{ post.id }}" id="comment">Add Comments</button>
+
+</div>
+{% endblock %}
+
+{% block script %}
+{% if data.config.comment %}
+
+{% if data.config.comment.disqus %}
+<script>
+var c = {
+    name: '{{ data.config.comment.disqus }}',
+    url: '//{{ data.config.comment.disqus }}.disqus.com/embed.js'
+}
+</script>
+{% else %}
+<script>
+var c = {
+    name: '{{ data.config.comment.duoshuo }}',
+    url: '//static.duoshuo.com/embed.js'
+}
+</script>
+{% endif %}
+
+{% endif %}
+
+<script src="{{ data.config.root }}/js/comment.js"></script>
+{% endblock %}

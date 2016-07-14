@@ -1,26 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="google" content="notranslate" />
-<link rel="icon" href="/images/icon.png" />
-<link rel="stylesheet" href="/css/style.css" />
+<!doctype html>
+<html>
 
-<title>Ansible Dynamic Inventory 的使用 - Youmi Tech Blog. </title>
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="keywords" content="" />
+<meta name="description" content="I dream of painting and then I paint my dream." />
+<link rel="icon" href="/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
 <script type="text/javascript"
   src="https://cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
-<script>
-var c = {
-    name: '',
-    url: ''
-}
-</script>
+
+  <title>
+Ansible Dynamic Inventory 的使用 | Youmi Tech Blog.
+</title>
 </head>
+
 <body>
 
 <div class="header">
@@ -29,28 +28,37 @@ var c = {
         <p>I dream of painting and then I paint my dream.</p>
     </div>
     <div class="menu">
-        <a href="/">home</a>
-        <a href="/archives">archives</a>
+    
+    <a href="/">home</a>
+    
+    <a href="/archives">archives</a>
+    
     </div>
 </div>
+
 
 
 <div id="post" class="center">
 
     <h1>Ansible Dynamic Inventory 的使用</h1>
+
     <p><a href="https://github.com/zheng-ji">zheng-ji</a> Posted at Apr 04, 2016 . -
-    <a href="/category/Ansible/">Ansible</a> -
+
+    
+    <a href="/category/ansible/">Ansible</a> -
+    
     <a href="/category/运维/">运维</a> -
+    
     </p>
 
     <div class="content"><p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
-<pre><code><span class="hljs-string">[webservers]</span>
-<span class="hljs-number">111.222.333.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
+<!-- more -->
+<pre><code>[webservers]
+<span class="hljs-number">111.222</span><span class="hljs-number">.333</span><span class="hljs-number">.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
 </code></pre><p>假如你有很多台机器，且机器经常变更导致IP时常变换，你还想把IP逐个写入 <code>/etc/ansible/hosts</code> 就不现实了。你也许会问，若不把IP写进 <code>/etc/ansible/hosts</code>，那不是没法用 <code>ansible</code> 指挥这些机器？
 感谢 <code>Ansible Dynamic Inventory</code>， 如果我们能通过编程等手段获取变更机器的IP，我们还是有办法实现的。</p>
 <hr>
-<h3 id="dynamic-inventory-">Dynamic Inventory 的原理</h3>
-<ul>
+<h3 id="dynamic-inventory-的原理">Dynamic Inventory 的原理</h3><ul>
 <li>通过编程的方式,也就是动态获取机器的 json 信息;</li>
 <li>Ansible 通过解析这串 json 字符串;</li>
 </ul>
@@ -58,11 +66,10 @@ var c = {
 </code></pre><p>Ansible dDynamic Inventory 对程序返回的 json 的转义是这样的：</p>
 <pre><code>{<span class="hljs-attr">"devtest-asg"</span>: {<span class="hljs-attr">"hosts"</span>: [<span class="hljs-string">"172.31.21.164"</span>], <span class="hljs-attr">"vars"</span>: {<span class="hljs-attr">"ansible_ssh_port"</span>: <span class="hljs-number">12306</span>}}}
 </code></pre><p>翻译一下就是  <code>/etc/ansible/hosts</code> 中的:</p>
-<pre><code><span class="hljs-string">[devtest-asg]</span>
-<span class="hljs-number">172.31.21.164</span> ansible_ssh_port=<span class="hljs-number">12306</span>
+<pre><code>[devtest-asg]
+<span class="hljs-number">172.31</span><span class="hljs-number">.21</span><span class="hljs-number">.164</span> ansible_ssh_port=<span class="hljs-number">12306</span>
 </code></pre><hr>
-<h3 id="-">一个实战的例子</h3>
-<p>官方文档对 Inventory 仅作概念性描述，阅读完后仍是一头雾水，不知如何下手。
+<h3 id="一个实战的例子">一个实战的例子</h3><p>官方文档对 Inventory 仅作概念性描述，阅读完后仍是一头雾水，不知如何下手。
 让我们用一个例子来豁然开朗吧。
 我们使用 AWS 的 AutoScaling Group，以下简称 ASG，ASG 会在某种自定义的条件下会自动开启和关闭机器，这给我们在辨别IP，定位机器的时候造成困扰。因此我们需要　<code>Ansible Dynamic Inventory</code></p>
 <p>我们使用 AWS 的｀boto｀库来获取ASG的实例信息.以下程序(get_host.py)中要实现的方法就是列出返回机器信息的 json 串。</p>
@@ -73,36 +80,36 @@ var c = {
 <span class="hljs-keyword">import</span> boto.ec2
 <span class="hljs-keyword">import</span> boto.ec2.autoscale
 
-<span class="hljs-type">AWS_REGION</span> = '<span class="hljs-type">BBB</span>'
-<span class="hljs-type">AWS_ACCESS_KEY</span> = 'xxxx'
-<span class="hljs-type">AWS_SECRET_KEY</span> = 'yyy'
+AWS_REGION = <span class="hljs-string">'BBB'</span>
+AWS_ACCESS_KEY = <span class="hljs-string">'xxxx'</span>
+AWS_SECRET_KEY = <span class="hljs-string">'yyy'</span>
 
-<span class="hljs-literal">result</span> = {}
-def getData():
+result = {}
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getData</span><span class="hljs-params">()</span>:</span>
     conn_as = boto.ec2.autoscale.connect_to_region(
-            'cn-north-<span class="hljs-number">1</span>',
-            aws_access_key_id=<span class="hljs-type">AWS_ACCESS_KEY</span>,
-            aws_secret_access_key=<span class="hljs-type">AWS_SECRET_KEY</span>)
-    group = conn_as.get_all_groups(names=['devtest-asg'])[<span class="hljs-number">0</span>]
+            <span class="hljs-string">'cn-north-1'</span>,
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_KEY)
+    group = conn_as.get_all_groups(names=[<span class="hljs-string">'devtest-asg'</span>])[<span class="hljs-number">0</span>]
     conn_ec2 = boto.ec2.connect_to_region(
-            <span class="hljs-type">AWS_REGION</span>,
-            aws_access_key_id=<span class="hljs-type">AWS_ACCESS_KEY</span>,
-            aws_secret_access_key=<span class="hljs-type">AWS_SECRET_KEY</span>)
+            AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_KEY)
 
     instance_ids = [i.instance_id <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> group.instances]
     reservations = conn_ec2.get_all_instances(instance_ids)
     instances = [i <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> reservations <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> r.instances]
 
-    <span class="hljs-literal">result</span>['devtest-asg'] = {}
-    <span class="hljs-literal">result</span>['devtest-asg']['hosts'] = []
+    result[<span class="hljs-string">'devtest-asg'</span>] = {}
+    result[<span class="hljs-string">'devtest-asg'</span>][<span class="hljs-string">'hosts'</span>] = []
     <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> reservations:
         <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> r.instances:
-            <span class="hljs-literal">result</span>['devtest-asg']['hosts'].append('%s' % i.private_ip_address)
-            <span class="hljs-literal">result</span>['devtest-asg']['vars'] = {'ansible_ssh_port': <span class="hljs-number">36000</span>}
+            result[<span class="hljs-string">'devtest-asg'</span>][<span class="hljs-string">'hosts'</span>].append(<span class="hljs-string">'%s'</span> % i.private_ip_address)
+            result[<span class="hljs-string">'devtest-asg'</span>][<span class="hljs-string">'vars'</span>] = {<span class="hljs-string">'ansible_ssh_port'</span>: <span class="hljs-number">36000</span>}
 
-def getlists():
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getlists</span><span class="hljs-params">()</span>:</span>
     getData()
-    print json.dumps(<span class="hljs-literal">result</span>)
+    <span class="hljs-keyword">print</span> json.dumps(result)
 
 getlists()
 </code></pre>
@@ -110,7 +117,18 @@ getlists()
 <pre><code>ansible -<span class="hljs-selector-tag">i</span> get_host<span class="hljs-selector-class">.py</span>  devtest-asg -m raw -<span class="hljs-selector-tag">a</span> <span class="hljs-string">'ls /'</span>
 </code></pre></div>
 
-    <div class="label">
+    
+
+    <div class="relate">
+    
+    
+    <a rel="prev" href="/2016/04/150658153.html">← Flume 实时收集日志</a>
+    
+
+    
+    
+    <a rel="next" href="/2016/02/137134732.html">ELK在广告系统监控中的应用 及 Elasticsearch简介 →</a>
+    
     </div>
 
     <div class="comment_list hide" id="disqus_thread"></div>
@@ -120,13 +138,19 @@ getlists()
 
 </div>
 
+
 <div class="footer">
     <div class="center">
-        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+        &copy; 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
     </div>
 </div>
 
 
+
+
+
 <script src="/js/comment.js"></script>
+
+
 </body>
 </html>

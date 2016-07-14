@@ -1,26 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="google" content="notranslate" />
-<link rel="icon" href="/images/icon.png" />
-<link rel="stylesheet" href="/css/style.css" />
+<!doctype html>
+<html>
 
-<title>ELK在广告系统监控中的应用 及 Elasticsearch简介 - Youmi Tech Blog. </title>
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="keywords" content="" />
+<meta name="description" content="I dream of painting and then I paint my dream." />
+<link rel="icon" href="/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
 <script type="text/javascript"
   src="https://cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
-<script>
-var c = {
-    name: '',
-    url: ''
-}
-</script>
+
+  <title>
+ELK在广告系统监控中的应用 及 Elasticsearch简介 | Youmi Tech Blog.
+</title>
 </head>
+
 <body>
 
 <div class="header">
@@ -29,28 +28,37 @@ var c = {
         <p>I dream of painting and then I paint my dream.</p>
     </div>
     <div class="menu">
-        <a href="/">home</a>
-        <a href="/archives">archives</a>
+    
+    <a href="/">home</a>
+    
+    <a href="/archives">archives</a>
+    
     </div>
 </div>
+
 
 
 <div id="post" class="center">
 
     <h1>ELK在广告系统监控中的应用 及 Elasticsearch简介</h1>
+
     <p><a href="https://github.com/csyangchen">csyangchen</a> Posted at Feb 29, 2016 . -
-    <a href="/category/ElasticSearch/">ElasticSearch</a> -
+
+    
+    <a href="/category/elasticsearch/">ElasticSearch</a> -
+    
     <a href="/category/日志/">日志</a> -
+    
     </p>
 
     <div class="content"><p>ELK是指elastic提供的一整套数据收集，存储，搜索，及展示方案。 由于部署及扩容方便，非常适合小团队快速搭建数据分析平台。ELK分别代指 Elasticsearch，Logstash，Kibana三个产品。</p>
+<!-- more -->
 <ul>
 <li><a href="https://www.elastic.co/products/elasticsearch"><strong>E</strong>lasticsearch</a>: 分布式，实时，全文搜索引擎，最核心的部分，也是接下来主要介绍的内容</li>
 <li><a href="https://www.elastic.co/products/logstash"><strong>L</strong>ogstash</a>: 非常灵活的日志收集工具，不局限于向 Elasticsearch 导入数据，可以定制多种输入，输出，及过滤转换规则</li>
 <li><a href="https://www.elastic.co/products/kibana"><strong>K</strong>ibana</a>: 提供对于 Elasticsearch 数据的搜索及可视化功能。并且支持开发人员自己按需开发插件。</li>
 </ul>
-<h1 id="elk-">ELK在广告系统监控中的应用</h1>
-<p>广告系统对于请求的响应时间非常敏感，此外，对于并发请求数要求也很高。因此，我们需要从请求响应时间，以及QPS两个指标，来检测系统的性能; 同时，为了定位瓶颈，我们需要把这两个指标，分拆到请求处理过程中的每个组件去看。</p>
+<h1 id="elk在广告系统监控中的应用">ELK在广告系统监控中的应用</h1><p>广告系统对于请求的响应时间非常敏感，此外，对于并发请求数要求也很高。因此，我们需要从请求响应时间，以及QPS两个指标，来检测系统的性能; 同时，为了定位瓶颈，我们需要把这两个指标，分拆到请求处理过程中的每个组件去看。</p>
 <p>此外，为了优化全球用户访问的速度，我们在全球部署了多个节点。因此，整个系统不是在一个内网环境，对监控数据的实时收集提出了考验。</p>
 <p>因此，我们需要一套灵活的监控统计库，能够非侵入的注册到业务代码中; 并且在一个统一的入口，实时监控每个节点的运行情况。</p>
 <p><img src="https://cloud.githubusercontent.com/assets/839287/13384488/f2339846-ded0-11e5-8b62-368e9d4de3de.png" alt="elk"></p>
@@ -63,8 +71,7 @@ var c = {
 <li>此外，通过 <a href="https://www.elastic.co/products/watcher">Watcher</a> 插件，定制告警信息，从而在系统出现问题时及时处理。</li>
 </ul>
 <p>这套机制，很好地满足了我们对于系统监控的需求，帮助我们分析，定位优化系统瓶颈。</p>
-<h1 id="elasticsearch-">Elasticsearch简介</h1>
-<p>Elasticsearch 是一个分布式，实时，全文搜索引擎。所有操作都是通过 RESTful 接口实现; 其底层实现是基于 Lucene 全文搜索引擎。数据以JSON文档的格式存储索引，不需要预先规定范式。</p>
+<h1 id="elasticsearch简介">Elasticsearch简介</h1><p>Elasticsearch 是一个分布式，实时，全文搜索引擎。所有操作都是通过 RESTful 接口实现; 其底层实现是基于 Lucene 全文搜索引擎。数据以JSON文档的格式存储索引，不需要预先规定范式。</p>
 <p>和传统数据库的术语对比一下，也许能够帮助我们对 Elasticsearch 有一个更加感性的认识</p>
 <table>
 <thead>
@@ -117,8 +124,7 @@ var c = {
 </tr>
 </tbody>
 </table>
-<h2 id="-">使用简介</h2>
-<p>所有操作都是通过RESTfull接口完成。请求URI指定了文档的&quot;路径&quot;。
+<h2 id="使用简介">使用简介</h2><p>所有操作都是通过RESTfull接口完成。请求URI指定了文档的&quot;路径&quot;。
 注意到语义通过请求的HTTP方法不同区分开来:</p>
 <ul>
 <li>创建 <code>POST /{index}/{type} {&quot;field&quot;: &quot;value&quot;, ...}</code></li>
@@ -132,13 +138,13 @@ var c = {
 <p>为了满足一些复杂的数据统计，仅仅上述的增删改查是不够的，为了充分使用 Elasticsearch的搜索功能，还需要学习 query DSL 的使用。query DSL 写起来比较复杂，这里仅仅列举一下和SQL关键字的对应。具体使用还得参考文档。</p>
 <pre><code>SQL            | query DSL
 -------        | --------
-=              | {<span class="hljs-string">"term"</span>: {field: val}
-IN             | {<span class="hljs-string">"terms"</span>: {field: [val, ...]}
-LIKE           | {<span class="hljs-string">"wildcard:"</span> {field: pattern}}
-BETWEEN AND    | {<span class="hljs-string">"range"</span>: {field: {<span class="hljs-string">"gt"</span>: val, <span class="hljs-string">"lt"</span>: val}}}
-AND / OR / NOT | {<span class="hljs-string">"bool"</span>: {<span class="hljs-string">"must"</span>/<span class="hljs-string">"should"</span>/<span class="hljs-string">"must_not"</span>: ...}
-Aggregations   | {<span class="hljs-string">"aggs"</span>: ...}
-JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-string">"has_child"</span>/<span class="hljs-string">"has_parent"</span>: ...}
+=              | {<span class="hljs-string">"term"</span><span class="hljs-symbol">:</span> {fie<span class="hljs-symbol">ld:</span> val}
+IN             | {<span class="hljs-string">"terms"</span><span class="hljs-symbol">:</span> {fie<span class="hljs-symbol">ld:</span> [val, ...]}
+LIKE           | {<span class="hljs-string">"wildcard:"</span> {fie<span class="hljs-symbol">ld:</span> pattern}}
+BETWEEN <span class="hljs-built_in">AND</span>    | {<span class="hljs-string">"range"</span><span class="hljs-symbol">:</span> {fie<span class="hljs-symbol">ld:</span> {<span class="hljs-string">"gt"</span><span class="hljs-symbol">:</span> val, <span class="hljs-string">"lt"</span><span class="hljs-symbol">:</span> val}}}
+<span class="hljs-built_in">AND</span> / <span class="hljs-built_in">OR</span> / <span class="hljs-built_in">NOT</span> | {<span class="hljs-string">"bool"</span><span class="hljs-symbol">:</span> {<span class="hljs-string">"must"</span>/<span class="hljs-string">"should"</span>/<span class="hljs-string">"must_not"</span><span class="hljs-symbol">:</span> ...}
+Aggregations   | {<span class="hljs-string">"aggs"</span><span class="hljs-symbol">:</span> ...}
+JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-string">"has_child"</span>/<span class="hljs-string">"has_parent"</span><span class="hljs-symbol">:</span> ...}
 </code></pre><p>随便列两个查询语句，感受一下:</p>
 <p><code>SELECT * FROM megacorp.employee WHERE age &gt; 30 AND last_name = &quot;smith&quot;</code></p>
 <pre><code>GET /megacorp/employee/_search
@@ -174,8 +180,7 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 }
 </code></pre><p>从个人的使用经验来说，熟练掌握 query DSL 的难度还是不小的 (毕竟大家都习惯的SQL的简洁直接)。此外，由于输入输出都是嵌套很深的JSON，解析起来也比较麻烦。为了降低使用门槛，一般都会有从SQL翻译的组件。比如Hive之于Hadoop，SparkSQL 之于 Spark。<a href="http://github.com/NLPchina/elasticsearch-sql">elasticsearch-sql</a>这个项目，提供了类似了SQL翻译功能。</p>
 <p>当然，Elasticsearch 最突出的地方在于对于全文搜索的支持。全文搜索的原理，以及在 Elasticsearch中具体如何全文搜索，这里略去不表。下面介绍下 Elasticsearch 集群的实现。</p>
-<h2 id="elasticsearch-">Elasticsearch 集群</h2>
-<p>Elasticsearch 是分布式的架构，可以通过新增节点的方式水平扩容，并提供一定的容错性。那么，它是怎么做到的呢? 我们一个一个概念，细细道来:</p>
+<h2 id="elasticsearch-集群">Elasticsearch 集群</h2><p>Elasticsearch 是分布式的架构，可以通过新增节点的方式水平扩容，并提供一定的容错性。那么，它是怎么做到的呢? 我们一个一个概念，细细道来:</p>
 <ul>
 <li><p><strong>节点(node)</strong>: 是一个独立的 Elasticsearch 运行实例。可以是一台机器上多个实例，当然更常见的选择是部署在不同的机器上。多个互通节点在一起组成了一个 <strong>集群 (cluster)</strong>。不同于常见的master/slave集群架构，Elasticsearch 集群中的节点是同构的，每个节点都可以处理请求，并将自己不能处理的请求&quot;重定向&quot;到目标节点。</p>
 </li>
@@ -199,24 +204,32 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 <li>由于索引个分片均匀分布到三个节点，因此，写入时，总体上可以实现三倍每个节点的写入吞吐</li>
 <li>对于每个索引的查询，都可以利用到每台节点的计算能力</li>
 </ul>
-<h2 id="lucene-">Lucene 是怎么工作的?</h2>
-<p>前面我们提到，Elasticsearch 是构建在 Lucene 之上的。那么，Lucene (也就是每个分片) 是如何实现数据的实时写入和查询的呢?</p>
+<h2 id="lucene-是怎么工作的">Lucene 是怎么工作的?</h2><p>前面我们提到，Elasticsearch 是构建在 Lucene 之上的。那么，Lucene (也就是每个分片) 是如何实现数据的实时写入和查询的呢?</p>
 <p>一个 Lucene 由多个 segment 构成。每个 segment 自构建索引信息。在查询的时候，先由分发到每个 segment 执行，然后将结果汇总。数据写入时，是按照 segment 来组织的。为了提高写入速度，数据先写入内存，然后在定期刷回磁盘(commit)。</p>
 <p>每个 segment 数据是不可变的，因此删除的时候仅仅标记为删除，相应的数据并没有彻底清除。在写入的过程中，会定期将 segment 的数据合并，在这个合并的过程中删除的数据才真正被清理掉。这也是为什么频繁更新会对性能不好的原因。最优的情况下，每个 Lucene 只有一个 segment，从而所有查询都不需要经过再次聚合。我们也可以手动触发 segment 合并，从而提高单个 Lucene 的查询性能。</p>
 <p>写入以及合并的示意图:</p>
 <p><img src="https://cloud.githubusercontent.com/assets/839287/13384491/f239c6b2-ded0-11e5-8f12-f51a46efb0ea.png" alt="seg1">
 <img src="https://cloud.githubusercontent.com/assets/839287/13384492/f253488a-ded0-11e5-8865-a2be651a9ac0.png" alt="seg2"></p>
 <p>如果要做类比的话，我们可以将写入理解为数据库系统 Write-Ahead-Logging (WAL) 的过程。只不过，这里写入的数据都是不变的，因此可以在写入的时候被非常高效地索引，并直接基于这些&quot;日志&quot;(即segments)查询。</p>
-<h2 id="-">索引维度的切割</h2>
-<p>由于每个索引是固定分片数的，为了优化查询，每个分片 (记得是 Lucene 实例) 索引的数据不能够无限增长。很多时候，我们的写入的是按天分的日志数据。一般的做法是，按天索引。在时间维度上利用索引进行分区，Logstash 默认为 <code>logstash-2016-02-01，logstash-2016-02-02，...</code> 这样按天分表。在查询的时候，可以指定多个索引查询，如<code>logstash-*</code>索引匹配。在有时间范围限定查询的时候，可以提前对于潜在索引过滤，从而减少执行查询所涉及的索引数目。这也是常见的数据库分区查询优化的一个手段。</p>
-<h2 id="-">参考</h2>
-<ul>
+<h2 id="索引维度的切割">索引维度的切割</h2><p>由于每个索引是固定分片数的，为了优化查询，每个分片 (记得是 Lucene 实例) 索引的数据不能够无限增长。很多时候，我们的写入的是按天分的日志数据。一般的做法是，按天索引。在时间维度上利用索引进行分区，Logstash 默认为 <code>logstash-2016-02-01，logstash-2016-02-02，...</code> 这样按天分表。在查询的时候，可以指定多个索引查询，如<code>logstash-*</code>索引匹配。在有时间范围限定查询的时候，可以提前对于潜在索引过滤，从而减少执行查询所涉及的索引数目。这也是常见的数据库分区查询优化的一个手段。</p>
+<h2 id="参考">参考</h2><ul>
 <li><a href="https://www.elastic.co/guide/en/elasticsearch/guide/master/">Elasticsearch: The Definitive Guide</a> 官方文档，啃透了 Elasticsearch 也就熟悉了</li>
 <li><a href="http://www.slideshare.net/gugod/elasticsearch-19877436">Elasticsearch 實戰介紹</a> 以及其后宝贵的引用</li>
 </ul>
 </div>
 
-    <div class="label">
+    
+
+    <div class="relate">
+    
+    
+    <a rel="prev" href="/2016/04/145599925.html">← Ansible Dynamic Inventory 的使用</a>
+    
+
+    
+    
+    <a rel="next" href="/2016/01/129715411.html">Alertover - 免费好用的团队消息工具 →</a>
+    
     </div>
 
     <div class="comment_list hide" id="disqus_thread"></div>
@@ -226,13 +239,19 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 
 </div>
 
+
 <div class="footer">
     <div class="center">
-        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+        &copy; 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
     </div>
 </div>
 
 
+
+
+
 <script src="/js/comment.js"></script>
+
+
 </body>
 </html>

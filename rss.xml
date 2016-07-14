@@ -1,14 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Wed, 06 Jul 2016 06:27:33 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Wed, 06 Jul 2016 06:27:33 GMT</pubDate><item><title><![CDATA[No title]]></title><description><![CDATA[<p>  卷积神经网络（Convolutional Neural Network, CNN）是一种前馈神经网络，每个神经元都只影响邻层的一部分神经元，具有局部感受野，因此，网络具有极强的捕捉局部特征的能力；另一方面，通过权值共享和池化，显著地降低了网络的计算复杂度，使得CNN得到广泛应用。CNN是图像分类和语音识别领域的杰出算法，也是目前大部分计算机视觉系统的核心技术，从facebook的图像自动标签到自动驾驶汽车，乃至AlphaGo都在使用。与此同时，近两年CNN逐渐被应用于NLP任务，在sentence classification中，基于CNN的模型取得了非常显著的效果。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Youmi Tech Blog.]]></title><description><![CDATA[I dream of painting and then I paint my dream.]]></description><link>http://tech.youmi.net</link><generator>RSS for Node</generator><lastBuildDate>Thu, 14 Jul 2016 13:26:49 GMT</lastBuildDate><atom:link href="http://tech.youmi.net/rss.xml" rel="self" type="application/rss+xml"/><pubDate>Thu, 14 Jul 2016 13:26:49 GMT</pubDate><item><title><![CDATA[卷积神经网络的数学推导]]></title><description><![CDATA[<p>  卷积神经网络（Convolutional Neural Network, CNN）是一种前馈神经网络，每个神经元都只影响邻层的一部分神经元，具有局部感受野，因此，网络具有极强的捕捉局部特征的能力；另一方面，通过权值共享和池化，显著地降低了网络的计算复杂度，使得CNN得到广泛应用。CNN是图像分类和语音识别领域的杰出算法，也是目前大部分计算机视觉系统的核心技术，从facebook的图像自动标签到自动驾驶汽车，乃至AlphaGo都在使用。与此同时，近两年CNN逐渐被应用于NLP任务，在sentence classification中，基于CNN的模型取得了非常显著的效果。</p>
+<!-- more -->
 <p>  本文假设读者比较熟悉神经网络的相关知识，特别是反向传播算法的过程，从数学推导的角度来理解CNN的内部原理。</p>
-<h2 id="1-">1 神经网络</h2>
-<p>  神经网络是由多个感知器（神经元）构成的全连接的网络，本质上来说，这样的连接只是简单的线性加权和而已，所以每个神经元加上同一个非线性函数（如sigmoid，tanh等），使得网络能拟合非线性。通常，称这个非线性函数为激活函数。一个典型的全连接神经网络如下所示：
+<h2 id="1-神经网络">1 神经网络</h2><p>  神经网络是由多个感知器（神经元）构成的全连接的网络，本质上来说，这样的连接只是简单的线性加权和而已，所以每个神经元加上同一个非线性函数（如sigmoid，tanh等），使得网络能拟合非线性。通常，称这个非线性函数为激活函数。一个典型的全连接神经网络如下所示：
 <img src="https://cloud.githubusercontent.com/assets/17400651/16607019/836c924c-436f-11e6-8f0c-552b2487a39d.png" alt="nn"></p>
-<h3 id="1-1-">1.1 前向传导</h3>
-<p>上图中，每个圆圈代表一个神经元（标上“+1”的是偏置节点，不算入神经元），从神经元引出的连接是参数矩阵w，从偏置节点引出的是参数向量b。w和b是整个网络最重要的参数。</p>
-<h4 id="1-1-1-">1.1.1 输入层</h4>
-<p>假设输入$x=[x_1, x_2, x_3]$，令第一层的输入$z^{(1)}$和激活输出$a^{(1)}$相等，即$z^{(1)} = a^{(1)} = x$。</p>
-<h4 id="1-1-2-">1.1.2 隐藏层</h4>
-<p>第二层的输入为：
+<h3 id="11-前向传导">1.1 前向传导</h3><p>上图中，每个圆圈代表一个神经元（标上“+1”的是偏置节点，不算入神经元），从神经元引出的连接是参数矩阵w，从偏置节点引出的是参数向量b。w和b是整个网络最重要的参数。</p>
+<h4 id="111-输入层">1.1.1 输入层</h4><p>假设输入$x=[x_1, x_2, x_3]$，令第一层的输入$z^{(1)}$和激活输出$a^{(1)}$相等，即$z^{(1)} = a^{(1)} = x$。</p>
+<h4 id="112-隐藏层">1.1.2 隐藏层</h4><p>第二层的输入为：
 $$z^{(2)}_1 = a^{(1)}_1 w^{(2)}_{11} + a^{(1)}_2 w^{(2)}_{12} + a^{(1)}_3 w^{(2)}_{13} + b^{(2)}_1\\
 z^{(2)}_2 = a^{(1)}_1 w^{(2)}_{21} + a^{(1)}_2 w^{(2)}_{22} + a^{(1)}_3 w^{(2)}_{23} + b^{(2)}_2\\
 z^{(2)}_3 = a^{(1)}_1 w^{(2)}_{31} + a^{(1)}_2 w^{(2)}_{32} + a^{(1)}_3 w^{(2)}_{33} + b^{(2)}_3$$
@@ -18,20 +15,17 @@ $$ z^{(2)} = w^{(2)}a^{(1)} + b^{(2)} $$
 <p>第二层的激活输出为：
 $$ a^{(2)} = f(z^{(2)}) $$
 其中，$f$为激活函数，$a^{(2)} \in R^{3 \times 1}$。</p>
-<h4 id="1-1-3-">1.1.3 输出层</h4>
-<p>第三层输入：
+<h4 id="113-输出层">1.1.3 输出层</h4><p>第三层输入：
 $$ z^{(3)} = w^{(3)}a^{(2)} + b^{(3)} $$
 其中，$ z^{(3)} \in R^{1\times 1}, w^{(3)} \in R^{1\times 3},  a^{(2)} \in R^{3\times 1}, b^{(3)} \in R^{1\times 1}$</p>
 <p>第三层激活输出：
 $$ a^{(3)} = f(z^{(3)}) $$
 其中，$f$为激活函数，$a^{(3)} \in R^{1 \times 1}$。特别地，记$a^{(3)}$为$h_{w,b}(x)$</p>
-<h4 id="1-1-4-">1.1.4 前向传导</h4>
-<p>因此，前向传导可以表示为：
+<h4 id="114-前向传导">1.1.4 前向传导</h4><p>因此，前向传导可以表示为：
 $$z^{(l+1)} = w^{(l+1)}a^{(l)}+b^{(l+1)}\\
 a^{(l+1)} = f(z^{(l+1)})$$
 其中，$l=1,2,...,L-1$，$L$为神经网络的层数。</p>
-<h3 id="1-2-">1.2 反向传播</h3>
-<p>假设神经网络的代价函数为：
+<h3 id="12-反向传播">1.2 反向传播</h3><p>假设神经网络的代价函数为：
 $$J(w,b)=\frac{1}{m} \sum_{i=1}^{m}J(w,b;x^{(i)},y^{(i)}) \\ 其中: J(w,b;x^{(i)},y^{(i)})=\frac{1}{2}(y^{(i)}-h_{w,b}(x^{(i)}))^2$$
 即，网络的整体代价为所有训练样例的平均代价。</p>
 <p>此处我们是要找到最佳的w,b使得$J(w,b)$即代价函数的值最小，因此$J$是关于$w,b$的函数，其中$w,b$也不是标量，是很多$w_{ij},b_i$的集合。代价函数中没有显式的看到$w,b$的表达式，那是因为用简洁的$h_{w,b}(x^{(i)})$替换了。因此要强调的是：$J$的展开表达式（假设能展开）中只有$w,b$才是变量，其他都是已知的。</p>
@@ -51,9 +45,7 @@ $$\delta^{(L)} = (y-h(x))\cdot a^{(L)} \\
 $$
 所以：
 $$ \frac{\partial J}{\partial w^{(l)}}= \frac{\partial J}{\partial z^{(l)}}\cdot \frac{\partial z^{(l)}}{\partial w^{(l)}}=\delta^{(l)}\cdot (a^{(l-1)})^T \\ \frac{\partial J}{\partial b^{(l)}}= \frac{\partial J}{\partial z^{(l)}}\cdot \frac{\partial z^{(l)}}{\partial b^{(l)}}=\delta^{(l)} , (l=2,...,L)$$</p>
-<h2 id="2-">2 卷积神经网络</h2>
-<h3 id="2-1-">2.1 卷积</h3>
-<p>假设有矩阵$A_{3\times 3}$和$B_{2\times2}$：
+<h2 id="2-卷积神经网络">2 卷积神经网络</h2><h3 id="21-卷积">2.1 卷积</h3><p>假设有矩阵$A_{3\times 3}$和$B_{2\times2}$：
 \begin{equation*}
 A=\left[\begin{array}{ccc}
 1 &amp; 2 &amp; 3\\
@@ -73,8 +65,7 @@ C=\begin{bmatrix}
 \end{bmatrix}
 \end{equation*}
 因此，假设 A 的大小为$h_a\times w_a$，B的大小为$h_b\times w_b$（其中$h_a\geq h_b, w_a\geq w_b$），则C的大小为$(h_a-h_b+1)\times(w_a-w_b+1)$，矩阵B称为卷积核或滤波器(filter)，矩阵C称为特征图(feature map)。上述运算称为窄卷积，若矩阵A预先上下各添加$h_b-1$行零向量，左右各添加$w_b-1$列零向量，再与B卷积，则称为宽卷积。窄卷积和宽卷积分别用conv2(A, B, &#39;valid&#39;)和conv2(A, B, &#39;full&#39;)表示。</p>
-<h3 id="2-2-">2.2 池化</h3>
-<p>假设矩阵C为$6\times4$的矩阵，池化窗口为$2\times2$，则按照池化窗口大小将矩阵C分割成6块不相交的$2\times2$小矩阵，对对每个块中的所有元素做求和平均操作，称为平均池化，取最大
+<h3 id="22-池化">2.2 池化</h3><p>假设矩阵C为$6\times4$的矩阵，池化窗口为$2\times2$，则按照池化窗口大小将矩阵C分割成6块不相交的$2\times2$小矩阵，对对每个块中的所有元素做求和平均操作，称为平均池化，取最大
 值则称为最大池化。得到的矩阵S称为pool map。如：
 \begin{equation*}
 C=\begin{bmatrix}
@@ -105,11 +96,9 @@ S=\begin{bmatrix}
 由于池化也称为下采样，用$S=down(C)$表示，为了使得池化层具有可学习性，一般令：
 $$S = \beta down(C) + b$$
 其中，$\beta$和$b$为标量参数。</p>
-<h3 id="2-3-">2.3 卷积神经网络</h3>
-<p>卷积神经网络是权值共享，非全连接的神经网络。以2个卷积层和2个池化层的卷积神经网络为例，其结构图如下：
+<h3 id="23-卷积神经网络">2.3 卷积神经网络</h3><p>卷积神经网络是权值共享，非全连接的神经网络。以2个卷积层和2个池化层的卷积神经网络为例，其结构图如下：
 <img src="https://cloud.githubusercontent.com/assets/17400651/16607038/a7b9429e-436f-11e6-85c5-ceab16a79342.jpg" alt="cnn"></p>
-<h4 id="2-3-1-">2.3.1 前向传导</h4>
-<p><strong>C1层：</strong>卷积神经网络的输入是$28\times28$的矩阵A，经过$F_1$个$5\times5$的卷积核$K_i^1(i=1,2,...,F_1)$的卷积生成$F_1$个$24\times24$大小的feature maps：
+<h4 id="231-前向传导">2.3.1 前向传导</h4><p><strong>C1层：</strong>卷积神经网络的输入是$28\times28$的矩阵A，经过$F_1$个$5\times5$的卷积核$K_i^1(i=1,2,...,F_1)$的卷积生成$F_1$个$24\times24$大小的feature maps：
 $$C_i^1 = conv2(A, K_i^1, &#39;valid&#39;) + b_i^1 \\
 u_i^1 = C_i^1 \\
 a_i^1 = f(u_i^1)
@@ -130,8 +119,7 @@ u_i^4 = S_i^4 \\
 a_i^4 = f(u_i^4)
 $$</p>
 <p><strong>全连接层：</strong>最后，将$a_i^4(i=1,2,...,F_3)$顺序展开成向量，并有序连接成一个长向量，作为全连接层网络的输入。</p>
-<h4 id="2-3-2-">2.3.2 反向传播</h4>
-<p>$\quad$卷积神经网络的反向传播本质上是和BP神经网络是一致的，区别在于全连接和非全连接：在反向求导时，卷积神经网络要明确参数连接了哪些神经元；而全连接的普通神经网络中的相邻两层的神经元都是与另一层的所有神经元相连的，因此反向求导时非常简单。</p>
+<h4 id="232-反向传播">2.3.2 反向传播</h4><p>$\quad$卷积神经网络的反向传播本质上是和BP神经网络是一致的，区别在于全连接和非全连接：在反向求导时，卷积神经网络要明确参数连接了哪些神经元；而全连接的普通神经网络中的相邻两层的神经元都是与另一层的所有神经元相连的，因此反向求导时非常简单。</p>
 <p><strong>全连接层</strong>
 $\quad$全连接层的反向求导是与普通神经网络的反向求导是一致的：
 $$\frac{\partial J}{\partial w^{(l)}} = \delta^{(l)}(a^{(l-1)})^T \\
@@ -167,15 +155,14 @@ $$\delta_i^{(l)} = \sum_{j=1}^{N_l}a_i^{(l)} \circ conv2(\delta_{j}^{(l+1)}, K_{
 \frac{\partial J}{\partial \beta_i^{(l)}} = \sum_{s,t}( \delta_i^{(l)} \circ d_i^{(l-1)} )_{st} $$
 其中，$(*)_{st}$遍历$*$的所有元素，$d_i^{(l-1)} = down(a_i^{(l-1)})$。</li>
 </ol>
-<h2 id="-">参考资料</h2>
-<ol>
+<h2 id="参考资料">参考资料</h2><ol>
 <li><a href="http://deeplearning.stanford.edu/wiki/index.php/UFLDL_Tutorial">UFLDL Tutorial</a></li>
 <li><a href="http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf">GradientBased Learning Applied to Document Recognition</a></li>
 <li><a href="http://cogprints.org/5869/1/cnn_tutorial.pdf">Notes on Convolutional Neural Networks</a></li>
 </ol>
-]]></description><link>http://tech.youmi.net/2016/07/163347168.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/07/163347168.html</guid><dc:creator><![CDATA[idiomer]]></dc:creator><pubDate>Wed, 06 Jul 2016 06:26:54 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>在广告行业中，实时竞价(Real Time Bidding, RTB)是近年来逐渐流行的一种广告采买方式。与传统的合约广告不同，RTB允许广告主对每一个展示机会进行竞价，从而以人群购买取代了广告位购买。需求方平台（Demand Side Platform, DSP）作为广告主的代理，需要在100ms以内对每个广告请求进行决策是否参与竞价，以及如果参与竞价出价多少。</p>
-<h2 id="rtb-">RTB竞价流程</h2>
-<p>下图给出了以某个DSP为视角的RTB的流程图（来自参考文献1）。</p>
+]]></description><link>http://tech.youmi.net/2016/07/163347168.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/07/163347168.html</guid><dc:creator><![CDATA[idiomer]]></dc:creator><pubDate>Wed, 06 Jul 2016 06:26:54 GMT</pubDate></item><item><title><![CDATA[浅析RTB中的竞价策略]]></title><description><![CDATA[<p>在广告行业中，实时竞价(Real Time Bidding, RTB)是近年来逐渐流行的一种广告采买方式。与传统的合约广告不同，RTB允许广告主对每一个展示机会进行竞价，从而以人群购买取代了广告位购买。需求方平台（Demand Side Platform, DSP）作为广告主的代理，需要在100ms以内对每个广告请求进行决策是否参与竞价，以及如果参与竞价出价多少。</p>
+<!-- more -->
+<h2 id="rtb竞价流程">RTB竞价流程</h2><p>下图给出了以某个DSP为视角的RTB的流程图（来自参考文献1）。</p>
 <p><img src="https://cloud.githubusercontent.com/assets/19795120/15852175/ca44376e-2cd2-11e6-90f3-c53e6a46a0b0.png" alt="RTB流程图"></p>
 <p>当一个用户访问了嵌入广告位的网站或者打开了含有广告位的App,该网站或者App会通过供应方平台(Supply-Side Platform, SSP)将广告请求发送给广告交易平台(Ad Exchange, ADX)，进而ADX将广告请求发送给多个DSP。值得注意的事目前国内很多移动流量较大的供应方(比如优酷土豆，今日头条)都是自建ADX,也就省了SSP将广告请求广播到其他ADX这一步。当某个DSP收到广告请求时，首先检索自身的广告推广库，将适合该请求的广告检索出来，一般来说，适合的条件包括：</p>
 <ul>
@@ -184,28 +171,20 @@ $$\delta_i^{(l)} = \sum_{j=1}^{N_l}a_i^{(l)} \circ conv2(\delta_{j}^{(l+1)}, K_{
 <li>该用户之前没推送过该广告或者推送次数不超过N次</li>
 </ul>
 <p>实际上不同的广告推广设定的条件可能差异较大，这里不深入讨论。在广告检索的过程中，一般需要用到数据管理平台(Data Management Platform, DMP)来判断是否满足定向条件。对于每个检索出的候选广告，DSP需要计算其出价，并通过内部竞价选出出价最高的那个广告。如果该广告的出价高于广告请求中附带的底价，则将该广告和出价返回给ADX;否则不响应该竞价请求。</p>
-<h2 id="-">竞价策略</h2>
-<p>DSP的出价是通过竞价策略来实现的，通常的竞价策略包括：单一出价，随机出价，真实出价，受限点击成本出价，线性出价和非线性出价。</p>
-<h3 id="-">定值出价</h3>
-<p>对所有广告请求均出同一个价格。虽然简单粗暴，但不少DSP实际在用。</p>
-<h3 id="-">随机出价</h3>
-<p>在一定出价范围内每次随机出价。</p>
-<h3 id="-">真实出价</h3>
-<p>不考虑预算限制，该策略估算该展示的真实价值，即<code>CVR*CPA</code>。其中<code>CVR</code>为该展示的转化概率，<code>CPA</code>为广告主为一次转化付的价格。<code>CVR</code>一般可以通过历史数据进行估算，也可以用机器学习的方法来预测，不过通常由于数据过于稀疏效果不会很理想。第二高价机制的存在，保证了DSP按照真实价值出价也有套利的机会。</p>
-<h3 id="-">受限点击成本出价</h3>
-<p>在CPC模式下，广告主一般会设定可接受的最高点击成本(<code>mCPC</code>)，这时就可以通过计算<code>mCPC*CTR</code>来出价。如果点击率预估准确，该策略可以保证其支出小于收入。</p>
-<h3 id="-">线性出价</h3>
-<p>在这种策略下，出价与估计的点击率成正比，即$$b(\theta)=b_0*\tfrac{\theta}{\theta_0},$$
+<h2 id="竞价策略">竞价策略</h2><p>DSP的出价是通过竞价策略来实现的，通常的竞价策略包括：单一出价，随机出价，真实出价，受限点击成本出价，线性出价和非线性出价。</p>
+<h3 id="定值出价">定值出价</h3><p>对所有广告请求均出同一个价格。虽然简单粗暴，但不少DSP实际在用。</p>
+<h3 id="随机出价">随机出价</h3><p>在一定出价范围内每次随机出价。</p>
+<h3 id="真实出价">真实出价</h3><p>不考虑预算限制，该策略估算该展示的真实价值，即<code>CVR*CPA</code>。其中<code>CVR</code>为该展示的转化概率，<code>CPA</code>为广告主为一次转化付的价格。<code>CVR</code>一般可以通过历史数据进行估算，也可以用机器学习的方法来预测，不过通常由于数据过于稀疏效果不会很理想。第二高价机制的存在，保证了DSP按照真实价值出价也有套利的机会。</p>
+<h3 id="受限点击成本出价">受限点击成本出价</h3><p>在CPC模式下，广告主一般会设定可接受的最高点击成本(<code>mCPC</code>)，这时就可以通过计算<code>mCPC*CTR</code>来出价。如果点击率预估准确，该策略可以保证其支出小于收入。</p>
+<h3 id="线性出价">线性出价</h3><p>在这种策略下，出价与估计的点击率成正比，即$$b(\theta)=b_0*\tfrac{\theta}{\theta_0},$$
 其中\(\theta_0，\theta\)分别是该广告的平均点击率以及该请求下预测的点击率，\(b_0\)是这个广告推广的基础出价，可以通过<code>mCPC</code>和\(\theta_0\)来确定。</p>
-<h3 id="-">非线性出价</h3>
-<p>该出价模型在有预算限制的情况下最大化收益(点击数或转化数)。假设某个广告推广在一定时期\(T\)内总共符合其定向的广告请求共\(N_T\)个，每个广告请求特征向量为\(\mathbf{x}\),满足定向条件的\(\mathbf{x}\)先验为\(p_x(\mathbf{x})\)。给定收益函数\(\theta(\mathbf{x})\)，竞价函数\(b(\theta(\mathbf{x}))\)，竞价成功率函数\(w(b(\theta(\mathbf{x})))\)，假设该广告的预算为\(B\), 则优化目标可以写成$$\mathop{\text{arg max}}_{b()}N_T\int_{\mathbf{x}}\theta(\mathbf{x})w(b(\theta(\mathbf{x})))p_x(\mathbf{x})d\mathbf{x}$$
+<h3 id="非线性出价">非线性出价</h3><p>该出价模型在有预算限制的情况下最大化收益(点击数或转化数)。假设某个广告推广在一定时期\(T\)内总共符合其定向的广告请求共\(N_T\)个，每个广告请求特征向量为\(\mathbf{x}\),满足定向条件的\(\mathbf{x}\)先验为\(p_x(\mathbf{x})\)。给定收益函数\(\theta(\mathbf{x})\)，竞价函数\(b(\theta(\mathbf{x}))\)，竞价成功率函数\(w(b(\theta(\mathbf{x})))\)，假设该广告的预算为\(B\), 则优化目标可以写成$$\mathop{\text{arg max}}_{b()}N_T\int_{\mathbf{x}}\theta(\mathbf{x})w(b(\theta(\mathbf{x})))p_x(\mathbf{x})d\mathbf{x}$$
 $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{x})))p_x(\mathbf{x})d\mathbf{x} \leq B.$$</p>
 <p>由于\(\textbf{x}\)和\(\theta(\textbf{x})\)的关系是确定的，$$p_\theta(\theta(\mathbf{x}))=\frac{p_x(\mathbf{x})}{\parallel\triangledown\theta(\mathbf{x})\parallel}.$$进而可以把优化目标写成$$\mathop{\text{arg max}}_{b()}N_T\int_{\theta}\theta w(b(\theta))p_\theta(\theta)d\theta$$</p>
 <p>$$\text{subject to }N_T\int_{\theta}b(\theta)w(b(\theta))p_\theta(\theta)d\theta \leq B.$$ 利用拉格朗日乘子法，目标函数变为$$\mathcal{L}(b(\theta),\lambda)=\int_{\theta}\theta w(b(\theta))p_\theta(\theta)d\theta-\lambda\int_{\theta}b(\theta)w(b(\theta))p_\theta(\theta)d\theta+\frac{\lambda B}{N_T},$$其中\(\lambda\)为拉格朗日乘子。通过对\(b(\theta)\)求偏导并令其等于零，可以得到$$\lambda w(b(\theta))=[\theta-\lambda b(\theta)]\frac{\partial w(b(\theta))}{\partial b(\theta)}.$$</p>
 <p>竞价成功率与出价的函数可以表示为$$w(b(\theta))=\frac{b(\theta)}{b(\theta)+c},$$其中\(c\)是一个常量。将此函数代入上式，得到$$b_{opt}(\theta)=\sqrt{\frac{c}{\lambda}\theta+c^2}-c.$$可以看出，最优的出价是收益的一个非线性函数。</p>
 <p>该策略的出价函数中有两个参数，分别是\(c\)和\(\lambda\)。其中\(c\)可以通过一段时间的盲投（比如利用随机出价策略），得到多个出价与成功率的离散点，再利用最小二乘法拟合曲线得到；\(\lambda\)可以通过网格遍历的方法，利用历史日志计算不同取值时的收益，从中选取最高的那个。</p>
-<h2 id="-">不同竞价策略的对比</h2>
-<table>
+<h2 id="不同竞价策略的对比">不同竞价策略的对比</h2><table>
 <thead>
 <tr>
 <th style="text-align:left">竞价策略</th>
@@ -248,17 +227,16 @@ $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{
 </tbody>
 </table>
 <p>上表给出了不同竞价策略的对比，可以看出非线性出价综合考虑了预算限制、竞价请求的估值、以及竞价成功率这些因素，是最接近实际情况的一种策略。论文[1]中的离线和在线实验结果也证明了其有效性。</p>
-<h2 id="-">参考文献</h2>
-<ol>
+<h2 id="参考文献">参考文献</h2><ol>
 <li>Zhang, W., Yuan, S., &amp; Wang, J. (2014, August). Optimal real-time bidding for display advertising. In Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 1077-1086). ACM.</li>
 <li>Zhang, W., Yuan, S., Wang, J., &amp; Shen, X. (2014). Real-time bidding benchmarking with iPinYou dataset. arXiv preprint arXiv:1407.7073.</li>
 <li>Zhang, W., &amp; Wang, J. (2015, August). Statistical Arbitrage Mining for Display Advertising. In Proceedings of the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (pp. 1465-1474). ACM.</li>
 <li>Perlich, C., Dalessandro, B., Hook, R., Stitelman, O., Raeder, T., &amp; Provost, F. (2012, August). Bid optimizing and inventory scoring in targeted online advertising. In Proceedings of the 18th ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 804-812). ACM.</li>
 </ol>
-]]></description><link>http://tech.youmi.net/2016/06/158883267.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/06/158883267.html</guid><dc:creator><![CDATA[BaichuanLi]]></dc:creator><pubDate>Wed, 29 Jun 2016 14:15:39 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。</p>
+]]></description><link>http://tech.youmi.net/2016/06/158883267.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/06/158883267.html</guid><dc:creator><![CDATA[BaichuanLi]]></dc:creator><pubDate>Wed, 29 Jun 2016 14:15:39 GMT</pubDate></item><item><title><![CDATA[Flume 实时收集日志]]></title><description><![CDATA[<p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。</p>
 <p>现实中，我们就碰到了这样的需求：实时汇总线上多台服务器的 Nginx 日志。Flume 立功了。</p>
-<h1 id="flume-">Flume 简介</h1>
-<p><a href="https://flume.apache.org/"><strong>F</strong>lume</a> 是一个分布式，可靠高效的日志收集系统，它允许用户自定义数据传输模型，因此可扩展性也强。也有较强的容错和恢复机制.
+<!-- more -->
+<h1 id="flume-简介">Flume 简介</h1><p><a href="https://flume.apache.org/"><strong>F</strong>lume</a> 是一个分布式，可靠高效的日志收集系统，它允许用户自定义数据传输模型，因此可扩展性也强。也有较强的容错和恢复机制.
 以下是几个重要的概念</p>
 <ul>
 <li>Event：Event 是 Flume 数据传输的基本单元。flume 以事件的形式将数据从源头传送到最终的目的。</li>
@@ -275,16 +253,14 @@ $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{
 <li>Channel 有 Memory Channel,File Channel 等</li>
 </ul>
 <p>它提供了一个骨架，以及多种 Source, Sink, Channel, 让你设计合适的数据模型。事实上也可以多个 Flume 联动完成，就像地铁的车厢一样。</p>
-<h1 id="-">定义数据流模型</h1>
-<p>回到我们开头的场景,我们要将多台服务器的 Nginx 日志进行汇总分析，</p>
+<h1 id="定义数据流模型">定义数据流模型</h1><p>回到我们开头的场景,我们要将多台服务器的 Nginx 日志进行汇总分析，</p>
 <p>分成两个 flume 来实现</p>
 <ul>
 <li>Flume1 数据流是 Exec Source -&gt; Memory Channel -&gt; Avro Sink,部署在业务机器上</li>
 <li>Flume2 数据流是 Avro Source -&gt; Memory Channel -&gt; FileRoll Sink,部署在目标机器上</li>
 </ul>
 <p><img src="http://zheng-ji.info/images/2016/04/flume1toflume2.jpg" alt="flume"></p>
-<h1 id="-">需要的准备</h1>
-<p>你需要安装</p>
+<h1 id="需要的准备">需要的准备</h1><p>你需要安装</p>
 <ul>
 <li>下载 <a href="https://flume.apache.org/download.html">Flume</a></li>
 <li>安装 JavaSDk,并在下载解压之后的 conf/flume-env.sh，配置</li>
@@ -312,26 +288,26 @@ agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-c
 agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-class">.k1</span><span class="hljs-selector-class">.port</span> = &lt;Your Target Port&gt;
 agent<span class="hljs-selector-class">.sinks</span><span class="hljs-selector-class">.k1</span><span class="hljs-selector-class">.channel</span>=c1
 </code></pre><p>Flume2 中的 avro2file.conf</p>
-<pre><code><span class="hljs-built_in">agent</span>.sources = s1
-<span class="hljs-built_in">agent</span>.channels = c1
-<span class="hljs-built_in">agent</span>.sinks = k1
+<pre><code>agent.<span class="hljs-attr">sources</span> = s1
+agent.<span class="hljs-attr">channels</span> = c1
+agent.<span class="hljs-attr">sinks</span> = k1
 
-<span class="hljs-built_in">agent</span>.sources.s1.<span class="hljs-built_in">type</span> = avro
-<span class="hljs-built_in">agent</span>.sources.s1.bind = &lt;Your Address&gt;
-<span class="hljs-built_in">agent</span>.sources.s1.port = &lt;Your Port&gt;
-<span class="hljs-built_in">agent</span>.sources.s1.channels = c1
+agent.sources.s1.<span class="hljs-attr">type</span> = avro
+agent.sources.s1.<span class="hljs-attr">bind</span> = &lt;Your Address&gt;
+agent.sources.s1.<span class="hljs-attr">port</span> = &lt;Your Port&gt;
+agent.sources.s1.<span class="hljs-attr">channels</span> = c1
 
-<span class="hljs-built_in">agent</span>.sinks.k1.<span class="hljs-built_in">type</span> = file_roll
-<span class="hljs-built_in">agent</span>.sinks.k1.sink.directory = /data/<span class="hljs-built_in">log</span>/ngxlog
-<span class="hljs-meta"># 滚动间隔</span>
-<span class="hljs-built_in">agent</span>.sinks.k1.sink.rollInterval = <span class="hljs-number">86400</span>
-<span class="hljs-built_in">agent</span>.sinks.k1.channel = c1
+agent.sinks.k1.<span class="hljs-attr">type</span> = file_roll
+agent.sinks.k1.sink.<span class="hljs-attr">directory</span> = /data/log/ngxlog
+<span class="hljs-comment"># 滚动间隔</span>
+agent.sinks.k1.sink.<span class="hljs-attr">rollInterval</span> = <span class="hljs-number">86400</span>
+agent.sinks.k1.<span class="hljs-attr">channel</span> = c1
 
-<span class="hljs-built_in">agent</span>.channels.c1.<span class="hljs-built_in">type</span> = memory
-<span class="hljs-meta"># 队列里 Event 的容量</span>
-<span class="hljs-built_in">agent</span>.channels.c1.capacity = <span class="hljs-number">10000</span>
-<span class="hljs-built_in">agent</span>.channels.c1.transactionCapacity = <span class="hljs-number">10000</span>
-<span class="hljs-built_in">agent</span>.channels.c1.keep-<span class="hljs-built_in">alive</span> = <span class="hljs-number">60</span>
+agent.channels.c1.<span class="hljs-attr">type</span> = memory
+<span class="hljs-comment"># 队列里 Event 的容量</span>
+agent.channels.c1.<span class="hljs-attr">capacity</span> = <span class="hljs-number">10000</span>
+agent.channels.c1.<span class="hljs-attr">transactionCapacity</span> = <span class="hljs-number">10000</span>
+agent.channels.c1.<span class="hljs-attr">keep-alive</span> = <span class="hljs-number">60</span>
 </code></pre><ul>
 <li>启动运行</li>
 </ul>
@@ -342,18 +318,17 @@ bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hl
 # 启动flume2
 bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hljs-keyword">conf</span> -f <span class="hljs-keyword">conf</span>/avro2file.<span class="hljs-keyword">conf</span> \
 -Dflume.root.logger=INFO
-</code></pre><h2 id="-">参考</h2>
-<ul>
+</code></pre><h2 id="参考">参考</h2><ul>
 <li><a href="https://flume.apache.org/FlumeUserGuide.html">FlumeUserGuide</a> 官方的 FlumeUserGuide</li>
 </ul>
-]]></description><link>http://tech.youmi.net/2016/04/150658153.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/150658153.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Mon, 25 Apr 2016 12:18:29 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
-<pre><code><span class="hljs-string">[webservers]</span>
-<span class="hljs-number">111.222.333.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
+]]></description><link>http://tech.youmi.net/2016/04/150658153.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/150658153.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Mon, 25 Apr 2016 12:18:29 GMT</pubDate></item><item><title><![CDATA[Ansible Dynamic Inventory 的使用]]></title><description><![CDATA[<p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
+<!-- more -->
+<pre><code>[webservers]
+<span class="hljs-number">111.222</span><span class="hljs-number">.333</span><span class="hljs-number">.444</span> ansible_ssh_port=<span class="hljs-number">888</span>
 </code></pre><p>假如你有很多台机器，且机器经常变更导致IP时常变换，你还想把IP逐个写入 <code>/etc/ansible/hosts</code> 就不现实了。你也许会问，若不把IP写进 <code>/etc/ansible/hosts</code>，那不是没法用 <code>ansible</code> 指挥这些机器？
 感谢 <code>Ansible Dynamic Inventory</code>， 如果我们能通过编程等手段获取变更机器的IP，我们还是有办法实现的。</p>
 <hr>
-<h3 id="dynamic-inventory-">Dynamic Inventory 的原理</h3>
-<ul>
+<h3 id="dynamic-inventory-的原理">Dynamic Inventory 的原理</h3><ul>
 <li>通过编程的方式,也就是动态获取机器的 json 信息;</li>
 <li>Ansible 通过解析这串 json 字符串;</li>
 </ul>
@@ -361,11 +336,10 @@ bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hl
 </code></pre><p>Ansible dDynamic Inventory 对程序返回的 json 的转义是这样的：</p>
 <pre><code>{<span class="hljs-attr">"devtest-asg"</span>: {<span class="hljs-attr">"hosts"</span>: [<span class="hljs-string">"172.31.21.164"</span>], <span class="hljs-attr">"vars"</span>: {<span class="hljs-attr">"ansible_ssh_port"</span>: <span class="hljs-number">12306</span>}}}
 </code></pre><p>翻译一下就是  <code>/etc/ansible/hosts</code> 中的:</p>
-<pre><code><span class="hljs-string">[devtest-asg]</span>
-<span class="hljs-number">172.31.21.164</span> ansible_ssh_port=<span class="hljs-number">12306</span>
+<pre><code>[devtest-asg]
+<span class="hljs-number">172.31</span><span class="hljs-number">.21</span><span class="hljs-number">.164</span> ansible_ssh_port=<span class="hljs-number">12306</span>
 </code></pre><hr>
-<h3 id="-">一个实战的例子</h3>
-<p>官方文档对 Inventory 仅作概念性描述，阅读完后仍是一头雾水，不知如何下手。
+<h3 id="一个实战的例子">一个实战的例子</h3><p>官方文档对 Inventory 仅作概念性描述，阅读完后仍是一头雾水，不知如何下手。
 让我们用一个例子来豁然开朗吧。
 我们使用 AWS 的 AutoScaling Group，以下简称 ASG，ASG 会在某种自定义的条件下会自动开启和关闭机器，这给我们在辨别IP，定位机器的时候造成困扰。因此我们需要　<code>Ansible Dynamic Inventory</code></p>
 <p>我们使用 AWS 的｀boto｀库来获取ASG的实例信息.以下程序(get_host.py)中要实现的方法就是列出返回机器信息的 json 串。</p>
@@ -376,49 +350,49 @@ bin/flume-ng agent -<span class="hljs-keyword">n</span> agent -c <span class="hl
 <span class="hljs-keyword">import</span> boto.ec2
 <span class="hljs-keyword">import</span> boto.ec2.autoscale
 
-<span class="hljs-type">AWS_REGION</span> = '<span class="hljs-type">BBB</span>'
-<span class="hljs-type">AWS_ACCESS_KEY</span> = 'xxxx'
-<span class="hljs-type">AWS_SECRET_KEY</span> = 'yyy'
+AWS_REGION = <span class="hljs-string">'BBB'</span>
+AWS_ACCESS_KEY = <span class="hljs-string">'xxxx'</span>
+AWS_SECRET_KEY = <span class="hljs-string">'yyy'</span>
 
-<span class="hljs-literal">result</span> = {}
-def getData():
+result = {}
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getData</span><span class="hljs-params">()</span>:</span>
     conn_as = boto.ec2.autoscale.connect_to_region(
-            'cn-north-<span class="hljs-number">1</span>',
-            aws_access_key_id=<span class="hljs-type">AWS_ACCESS_KEY</span>,
-            aws_secret_access_key=<span class="hljs-type">AWS_SECRET_KEY</span>)
-    group = conn_as.get_all_groups(names=['devtest-asg'])[<span class="hljs-number">0</span>]
+            <span class="hljs-string">'cn-north-1'</span>,
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_KEY)
+    group = conn_as.get_all_groups(names=[<span class="hljs-string">'devtest-asg'</span>])[<span class="hljs-number">0</span>]
     conn_ec2 = boto.ec2.connect_to_region(
-            <span class="hljs-type">AWS_REGION</span>,
-            aws_access_key_id=<span class="hljs-type">AWS_ACCESS_KEY</span>,
-            aws_secret_access_key=<span class="hljs-type">AWS_SECRET_KEY</span>)
+            AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_KEY)
 
     instance_ids = [i.instance_id <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> group.instances]
     reservations = conn_ec2.get_all_instances(instance_ids)
     instances = [i <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> reservations <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> r.instances]
 
-    <span class="hljs-literal">result</span>['devtest-asg'] = {}
-    <span class="hljs-literal">result</span>['devtest-asg']['hosts'] = []
+    result[<span class="hljs-string">'devtest-asg'</span>] = {}
+    result[<span class="hljs-string">'devtest-asg'</span>][<span class="hljs-string">'hosts'</span>] = []
     <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> reservations:
         <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> r.instances:
-            <span class="hljs-literal">result</span>['devtest-asg']['hosts'].append('%s' % i.private_ip_address)
-            <span class="hljs-literal">result</span>['devtest-asg']['vars'] = {'ansible_ssh_port': <span class="hljs-number">36000</span>}
+            result[<span class="hljs-string">'devtest-asg'</span>][<span class="hljs-string">'hosts'</span>].append(<span class="hljs-string">'%s'</span> % i.private_ip_address)
+            result[<span class="hljs-string">'devtest-asg'</span>][<span class="hljs-string">'vars'</span>] = {<span class="hljs-string">'ansible_ssh_port'</span>: <span class="hljs-number">36000</span>}
 
-def getlists():
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getlists</span><span class="hljs-params">()</span>:</span>
     getData()
-    print json.dumps(<span class="hljs-literal">result</span>)
+    <span class="hljs-keyword">print</span> json.dumps(result)
 
 getlists()
 </code></pre>
 <p>执行以下命令就可以愉快地使用 Ansible 了，其中 <code>devtest-asg</code> 是ASG的别名：</p>
 <pre><code>ansible -<span class="hljs-selector-tag">i</span> get_host<span class="hljs-selector-class">.py</span>  devtest-asg -m raw -<span class="hljs-selector-tag">a</span> <span class="hljs-string">'ls /'</span>
-</code></pre>]]></description><link>http://tech.youmi.net/2016/04/145599925.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/145599925.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Wed, 06 Apr 2016 14:26:28 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>ELK是指elastic提供的一整套数据收集，存储，搜索，及展示方案。 由于部署及扩容方便，非常适合小团队快速搭建数据分析平台。ELK分别代指 Elasticsearch，Logstash，Kibana三个产品。</p>
+</code></pre>]]></description><link>http://tech.youmi.net/2016/04/145599925.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/04/145599925.html</guid><dc:creator><![CDATA[zheng-ji]]></dc:creator><pubDate>Wed, 06 Apr 2016 14:26:28 GMT</pubDate></item><item><title><![CDATA[ELK在广告系统监控中的应用 及 Elasticsearch简介]]></title><description><![CDATA[<p>ELK是指elastic提供的一整套数据收集，存储，搜索，及展示方案。 由于部署及扩容方便，非常适合小团队快速搭建数据分析平台。ELK分别代指 Elasticsearch，Logstash，Kibana三个产品。</p>
+<!-- more -->
 <ul>
 <li><a href="https://www.elastic.co/products/elasticsearch"><strong>E</strong>lasticsearch</a>: 分布式，实时，全文搜索引擎，最核心的部分，也是接下来主要介绍的内容</li>
 <li><a href="https://www.elastic.co/products/logstash"><strong>L</strong>ogstash</a>: 非常灵活的日志收集工具，不局限于向 Elasticsearch 导入数据，可以定制多种输入，输出，及过滤转换规则</li>
 <li><a href="https://www.elastic.co/products/kibana"><strong>K</strong>ibana</a>: 提供对于 Elasticsearch 数据的搜索及可视化功能。并且支持开发人员自己按需开发插件。</li>
 </ul>
-<h1 id="elk-">ELK在广告系统监控中的应用</h1>
-<p>广告系统对于请求的响应时间非常敏感，此外，对于并发请求数要求也很高。因此，我们需要从请求响应时间，以及QPS两个指标，来检测系统的性能; 同时，为了定位瓶颈，我们需要把这两个指标，分拆到请求处理过程中的每个组件去看。</p>
+<h1 id="elk在广告系统监控中的应用">ELK在广告系统监控中的应用</h1><p>广告系统对于请求的响应时间非常敏感，此外，对于并发请求数要求也很高。因此，我们需要从请求响应时间，以及QPS两个指标，来检测系统的性能; 同时，为了定位瓶颈，我们需要把这两个指标，分拆到请求处理过程中的每个组件去看。</p>
 <p>此外，为了优化全球用户访问的速度，我们在全球部署了多个节点。因此，整个系统不是在一个内网环境，对监控数据的实时收集提出了考验。</p>
 <p>因此，我们需要一套灵活的监控统计库，能够非侵入的注册到业务代码中; 并且在一个统一的入口，实时监控每个节点的运行情况。</p>
 <p><img src="https://cloud.githubusercontent.com/assets/839287/13384488/f2339846-ded0-11e5-8b62-368e9d4de3de.png" alt="elk"></p>
@@ -431,8 +405,7 @@ getlists()
 <li>此外，通过 <a href="https://www.elastic.co/products/watcher">Watcher</a> 插件，定制告警信息，从而在系统出现问题时及时处理。</li>
 </ul>
 <p>这套机制，很好地满足了我们对于系统监控的需求，帮助我们分析，定位优化系统瓶颈。</p>
-<h1 id="elasticsearch-">Elasticsearch简介</h1>
-<p>Elasticsearch 是一个分布式，实时，全文搜索引擎。所有操作都是通过 RESTful 接口实现; 其底层实现是基于 Lucene 全文搜索引擎。数据以JSON文档的格式存储索引，不需要预先规定范式。</p>
+<h1 id="elasticsearch简介">Elasticsearch简介</h1><p>Elasticsearch 是一个分布式，实时，全文搜索引擎。所有操作都是通过 RESTful 接口实现; 其底层实现是基于 Lucene 全文搜索引擎。数据以JSON文档的格式存储索引，不需要预先规定范式。</p>
 <p>和传统数据库的术语对比一下，也许能够帮助我们对 Elasticsearch 有一个更加感性的认识</p>
 <table>
 <thead>
@@ -485,8 +458,7 @@ getlists()
 </tr>
 </tbody>
 </table>
-<h2 id="-">使用简介</h2>
-<p>所有操作都是通过RESTfull接口完成。请求URI指定了文档的&quot;路径&quot;。
+<h2 id="使用简介">使用简介</h2><p>所有操作都是通过RESTfull接口完成。请求URI指定了文档的&quot;路径&quot;。
 注意到语义通过请求的HTTP方法不同区分开来:</p>
 <ul>
 <li>创建 <code>POST /{index}/{type} {&quot;field&quot;: &quot;value&quot;, ...}</code></li>
@@ -500,13 +472,13 @@ getlists()
 <p>为了满足一些复杂的数据统计，仅仅上述的增删改查是不够的，为了充分使用 Elasticsearch的搜索功能，还需要学习 query DSL 的使用。query DSL 写起来比较复杂，这里仅仅列举一下和SQL关键字的对应。具体使用还得参考文档。</p>
 <pre><code>SQL            | query DSL
 -------        | --------
-=              | {<span class="hljs-string">"term"</span>: {field: val}
-IN             | {<span class="hljs-string">"terms"</span>: {field: [val, ...]}
-LIKE           | {<span class="hljs-string">"wildcard:"</span> {field: pattern}}
-BETWEEN AND    | {<span class="hljs-string">"range"</span>: {field: {<span class="hljs-string">"gt"</span>: val, <span class="hljs-string">"lt"</span>: val}}}
-AND / OR / NOT | {<span class="hljs-string">"bool"</span>: {<span class="hljs-string">"must"</span>/<span class="hljs-string">"should"</span>/<span class="hljs-string">"must_not"</span>: ...}
-Aggregations   | {<span class="hljs-string">"aggs"</span>: ...}
-JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-string">"has_child"</span>/<span class="hljs-string">"has_parent"</span>: ...}
+=              | {<span class="hljs-string">"term"</span><span class="hljs-symbol">:</span> {fie<span class="hljs-symbol">ld:</span> val}
+IN             | {<span class="hljs-string">"terms"</span><span class="hljs-symbol">:</span> {fie<span class="hljs-symbol">ld:</span> [val, ...]}
+LIKE           | {<span class="hljs-string">"wildcard:"</span> {fie<span class="hljs-symbol">ld:</span> pattern}}
+BETWEEN <span class="hljs-built_in">AND</span>    | {<span class="hljs-string">"range"</span><span class="hljs-symbol">:</span> {fie<span class="hljs-symbol">ld:</span> {<span class="hljs-string">"gt"</span><span class="hljs-symbol">:</span> val, <span class="hljs-string">"lt"</span><span class="hljs-symbol">:</span> val}}}
+<span class="hljs-built_in">AND</span> / <span class="hljs-built_in">OR</span> / <span class="hljs-built_in">NOT</span> | {<span class="hljs-string">"bool"</span><span class="hljs-symbol">:</span> {<span class="hljs-string">"must"</span>/<span class="hljs-string">"should"</span>/<span class="hljs-string">"must_not"</span><span class="hljs-symbol">:</span> ...}
+Aggregations   | {<span class="hljs-string">"aggs"</span><span class="hljs-symbol">:</span> ...}
+JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-string">"has_child"</span>/<span class="hljs-string">"has_parent"</span><span class="hljs-symbol">:</span> ...}
 </code></pre><p>随便列两个查询语句，感受一下:</p>
 <p><code>SELECT * FROM megacorp.employee WHERE age &gt; 30 AND last_name = &quot;smith&quot;</code></p>
 <pre><code>GET /megacorp/employee/_search
@@ -542,8 +514,7 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 }
 </code></pre><p>从个人的使用经验来说，熟练掌握 query DSL 的难度还是不小的 (毕竟大家都习惯的SQL的简洁直接)。此外，由于输入输出都是嵌套很深的JSON，解析起来也比较麻烦。为了降低使用门槛，一般都会有从SQL翻译的组件。比如Hive之于Hadoop，SparkSQL 之于 Spark。<a href="http://github.com/NLPchina/elasticsearch-sql">elasticsearch-sql</a>这个项目，提供了类似了SQL翻译功能。</p>
 <p>当然，Elasticsearch 最突出的地方在于对于全文搜索的支持。全文搜索的原理，以及在 Elasticsearch中具体如何全文搜索，这里略去不表。下面介绍下 Elasticsearch 集群的实现。</p>
-<h2 id="elasticsearch-">Elasticsearch 集群</h2>
-<p>Elasticsearch 是分布式的架构，可以通过新增节点的方式水平扩容，并提供一定的容错性。那么，它是怎么做到的呢? 我们一个一个概念，细细道来:</p>
+<h2 id="elasticsearch-集群">Elasticsearch 集群</h2><p>Elasticsearch 是分布式的架构，可以通过新增节点的方式水平扩容，并提供一定的容错性。那么，它是怎么做到的呢? 我们一个一个概念，细细道来:</p>
 <ul>
 <li><p><strong>节点(node)</strong>: 是一个独立的 Elasticsearch 运行实例。可以是一台机器上多个实例，当然更常见的选择是部署在不同的机器上。多个互通节点在一起组成了一个 <strong>集群 (cluster)</strong>。不同于常见的master/slave集群架构，Elasticsearch 集群中的节点是同构的，每个节点都可以处理请求，并将自己不能处理的请求&quot;重定向&quot;到目标节点。</p>
 </li>
@@ -567,22 +538,20 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 <li>由于索引个分片均匀分布到三个节点，因此，写入时，总体上可以实现三倍每个节点的写入吞吐</li>
 <li>对于每个索引的查询，都可以利用到每台节点的计算能力</li>
 </ul>
-<h2 id="lucene-">Lucene 是怎么工作的?</h2>
-<p>前面我们提到，Elasticsearch 是构建在 Lucene 之上的。那么，Lucene (也就是每个分片) 是如何实现数据的实时写入和查询的呢?</p>
+<h2 id="lucene-是怎么工作的">Lucene 是怎么工作的?</h2><p>前面我们提到，Elasticsearch 是构建在 Lucene 之上的。那么，Lucene (也就是每个分片) 是如何实现数据的实时写入和查询的呢?</p>
 <p>一个 Lucene 由多个 segment 构成。每个 segment 自构建索引信息。在查询的时候，先由分发到每个 segment 执行，然后将结果汇总。数据写入时，是按照 segment 来组织的。为了提高写入速度，数据先写入内存，然后在定期刷回磁盘(commit)。</p>
 <p>每个 segment 数据是不可变的，因此删除的时候仅仅标记为删除，相应的数据并没有彻底清除。在写入的过程中，会定期将 segment 的数据合并，在这个合并的过程中删除的数据才真正被清理掉。这也是为什么频繁更新会对性能不好的原因。最优的情况下，每个 Lucene 只有一个 segment，从而所有查询都不需要经过再次聚合。我们也可以手动触发 segment 合并，从而提高单个 Lucene 的查询性能。</p>
 <p>写入以及合并的示意图:</p>
 <p><img src="https://cloud.githubusercontent.com/assets/839287/13384491/f239c6b2-ded0-11e5-8f12-f51a46efb0ea.png" alt="seg1">
 <img src="https://cloud.githubusercontent.com/assets/839287/13384492/f253488a-ded0-11e5-8865-a2be651a9ac0.png" alt="seg2"></p>
 <p>如果要做类比的话，我们可以将写入理解为数据库系统 Write-Ahead-Logging (WAL) 的过程。只不过，这里写入的数据都是不变的，因此可以在写入的时候被非常高效地索引，并直接基于这些&quot;日志&quot;(即segments)查询。</p>
-<h2 id="-">索引维度的切割</h2>
-<p>由于每个索引是固定分片数的，为了优化查询，每个分片 (记得是 Lucene 实例) 索引的数据不能够无限增长。很多时候，我们的写入的是按天分的日志数据。一般的做法是，按天索引。在时间维度上利用索引进行分区，Logstash 默认为 <code>logstash-2016-02-01，logstash-2016-02-02，...</code> 这样按天分表。在查询的时候，可以指定多个索引查询，如<code>logstash-*</code>索引匹配。在有时间范围限定查询的时候，可以提前对于潜在索引过滤，从而减少执行查询所涉及的索引数目。这也是常见的数据库分区查询优化的一个手段。</p>
-<h2 id="-">参考</h2>
-<ul>
+<h2 id="索引维度的切割">索引维度的切割</h2><p>由于每个索引是固定分片数的，为了优化查询，每个分片 (记得是 Lucene 实例) 索引的数据不能够无限增长。很多时候，我们的写入的是按天分的日志数据。一般的做法是，按天索引。在时间维度上利用索引进行分区，Logstash 默认为 <code>logstash-2016-02-01，logstash-2016-02-02，...</code> 这样按天分表。在查询的时候，可以指定多个索引查询，如<code>logstash-*</code>索引匹配。在有时间范围限定查询的时候，可以提前对于潜在索引过滤，从而减少执行查询所涉及的索引数目。这也是常见的数据库分区查询优化的一个手段。</p>
+<h2 id="参考">参考</h2><ul>
 <li><a href="https://www.elastic.co/guide/en/elasticsearch/guide/master/">Elasticsearch: The Definitive Guide</a> 官方文档，啃透了 Elasticsearch 也就熟悉了</li>
 <li><a href="http://www.slideshare.net/gugod/elasticsearch-19877436">Elasticsearch 實戰介紹</a> 以及其后宝贵的引用</li>
 </ul>
-]]></description><link>http://tech.youmi.net/2016/02/137134732.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/02/137134732.html</guid><dc:creator><![CDATA[csyangchen]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:59:21 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>稍微“古老”一点的互联网时代，我们一直用短信，邮件来进行消息通知，特别是服务器报警这些信息。短信虽好，但是太贵，而且没办法分类分组分级别，后来我们发现了Pushover，很好地解决了我们的问题。</p>
+]]></description><link>http://tech.youmi.net/2016/02/137134732.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/02/137134732.html</guid><dc:creator><![CDATA[csyangchen]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:59:21 GMT</pubDate></item><item><title><![CDATA[Alertover - 免费好用的团队消息工具]]></title><description><![CDATA[<p>稍微“古老”一点的互联网时代，我们一直用短信，邮件来进行消息通知，特别是服务器报警这些信息。短信虽好，但是太贵，而且没办法分类分组分级别，后来我们发现了Pushover，很好地解决了我们的问题。</p>
+<!-- more -->
 <p>本来我们是一直用Pushover的，但是由于众所周知的原因，Pushover的Android版本在国内没法用，而微信又满足不了我们的需求（分组，分级别推送消息），因此我们自己开发了一个Pushover的替代版：</p>
 <p><a href="https://www.alertover.com">https://www.alertover.com</a></p>
 <p>免费实用。
@@ -590,7 +559,8 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 同时，我们即将开源Alertover的各类客户端源码。</p>
 <p>使用过程中有遇到任何问题，可以发邮件给我们 alertover@youmi.net，或者加我们的官方用户QQ群：313270450</p>
 <p><img src="https://cloud.githubusercontent.com/assets/1064207/12672140/1588e560-c6af-11e5-9aa8-f43509ffae9e.png" alt="www alertover com"></p>
-]]></description><link>http://tech.youmi.net/2016/01/129715411.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/01/129715411.html</guid><dc:creator><![CDATA[ruitao]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:59:03 GMT</pubDate></item><item><title><![CDATA[No title]]></title><description><![CDATA[<p>Upstart是一个用于替代传统 init 的系统初始化程序。相对于 init 的同步执行，Upstart 是事件驱动、异步工作的。由于是事件驱动， Upstart 提供了传统 init 没法提供的功能，如机器运行时添加或删除U盘；由于异步工作，Upstart 更能充分利用CPU资源，性能更好。</p>
+]]></description><link>http://tech.youmi.net/2016/01/129715411.html</link><guid isPermaLink="true">http://tech.youmi.net/2016/01/129715411.html</guid><dc:creator><![CDATA[ruitao]]></dc:creator><pubDate>Mon, 28 Mar 2016 01:59:03 GMT</pubDate></item><item><title><![CDATA[Upstart 系统初始化过程]]></title><description><![CDATA[<p>Upstart是一个用于替代传统 init 的系统初始化程序。相对于 init 的同步执行，Upstart 是事件驱动、异步工作的。由于是事件驱动， Upstart 提供了传统 init 没法提供的功能，如机器运行时添加或删除U盘；由于异步工作，Upstart 更能充分利用CPU资源，性能更好。</p>
+<!-- more -->
 <p>Ubuntu 是我们常用的开发和服务器系统，当前最新 LTS 使用的是 Upstart，了解 Upstart 可以帮我们解答以下这些疑惑：</p>
 <ul>
 <li>机器启动后的一些初始化脚本应该放在哪里比较合适？</li>
@@ -600,16 +570,14 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 <li>在一些重启后某些硬盘内容会消失的云主机里什么时候初始化 flashcache？</li>
 </ul>
 <p>下面介绍一下日常最需要了解 Upstart 的一些方面：</p>
-<h3 id="-">一、基本概念</h3>
-<p>Upstart 的可执行文件就是系统里的 /sbin/init。它事件驱动的特性体现在通过一些事件来触发任务的执行，比如开机后有 startup 事件、启动一个 job 前有 starting xxx（job 的名字）事件、插入一个U盘也会有相应的事件。Upstart 的任务配置一般写在 /etc/init 目录下（其实还有用户的 Upstart 配置，可以放在 $HOME/.init 目录下）。</p>
+<h3 id="一、基本概念">一、基本概念</h3><p>Upstart 的可执行文件就是系统里的 /sbin/init。它事件驱动的特性体现在通过一些事件来触发任务的执行，比如开机后有 startup 事件、启动一个 job 前有 starting xxx（job 的名字）事件、插入一个U盘也会有相应的事件。Upstart 的任务配置一般写在 /etc/init 目录下（其实还有用户的 Upstart 配置，可以放在 $HOME/.init 目录下）。</p>
 <p>Upstart job 的三个类型：</p>
 <ol>
 <li>Task Job： 运行一小会儿就停止的服务。</li>
 <li>Service Job： 一直运行的服务，比如 PHP-FPM、sshd。</li>
 <li>Abstract Job：没有 exec 和 script 的任务， Upstart 不会跟踪他的pid， 常用来设置网络服务。</li>
 </ol>
-<h3 id="-upstart-">二、Upstart 在机器启动时的执行过程</h3>
-<p><img src="https://cloud.githubusercontent.com/assets/2314596/12577547/e2abbdee-c455-11e5-99e4-f825db9f3f6b.png" alt="ubuntu_upstart_procedure"></p>
+<h3 id="二、upstart-在机器启动时的执行过程">二、Upstart 在机器启动时的执行过程</h3><p><img src="https://cloud.githubusercontent.com/assets/2314596/12577547/e2abbdee-c455-11e5-99e4-f825db9f3f6b.png" alt="ubuntu_upstart_procedure"></p>
 <p>在机器做完那些<a href="http://www.yunweipai.com/archives/782.html">加载内核，挂载跟目录等工作</a>后，操作系统会调用 /sbin/init 来接管后续的服务启动过程。</p>
 <ul>
 <li>init 启动后马上发出第一个事件 startup</li>
@@ -640,15 +608,13 @@ JOIN           | {<span class="hljs-string">"nestted"</span>/<span class="hljs-s
 </ul>
 </li>
 </ul>
-<h3 id="-init-">三、 和传统 init 的兼容</h3>
-<p>Upstart 兼容传统的 init 也称为 sysV 的启动方式，从上面步骤可以看到在 /etc/init/rc.conf 里调用了 /etc/init.d/rc 2， 这个程序会遍历 /etc/rc2.d 目录下的脚本并执行。</p>
+<h3 id="三、-和传统-init-的兼容">三、 和传统 init 的兼容</h3><p>Upstart 兼容传统的 init 也称为 sysV 的启动方式，从上面步骤可以看到在 /etc/init/rc.conf 里调用了 /etc/init.d/rc 2， 这个程序会遍历 /etc/rc2.d 目录下的脚本并执行。</p>
 <p>平时我们启动服务会用到下面这几种命令：</p>
-<pre><code>service <span class="hljs-keyword">x</span> start
-start <span class="hljs-keyword">x</span>
-initctl start <span class="hljs-keyword">x</span>
+<pre><code>service x <span class="hljs-literal">start</span>
+<span class="hljs-literal">start</span> x
+initctl <span class="hljs-literal">start</span> x
 </code></pre><p>其中 service 是一个脚本，它的工作原理是先检查 /etc/init 里的配置有没有这个命令要启动的服务，如果没有才到 /etc/init.d 里找到启动那个服务的脚本并执行。如果你通过 apt-get 安装 PHP-FPM 可以发现 /etc/init.d 里的 PHP-FPM 启动脚本并不会被 service php5-fpm start 调用。</p>
-<h3 id="-">参考资料</h3>
-<ul>
+<h3 id="参考资料">参考资料</h3><ul>
 <li><a href="http://upstart.ubuntu.com/cookbook">Upstart cookbook</a></li>
 <li><a href="http://www.yunweipai.com/archives/782.html">Linux操作系统启动过程详解</a></li>
 <li><a href="http://manpages.ubuntu.com/manpages/vivid/man8/mountall.8.html">mountall</a></li>

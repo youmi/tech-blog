@@ -1,26 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="google" content="notranslate" />
-<link rel="icon" href="/images/icon.png" />
-<link rel="stylesheet" href="/css/style.css" />
+<!doctype html>
+<html>
 
-<title>浅析RTB中的竞价策略 - Youmi Tech Blog. </title>
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="keywords" content="" />
+<meta name="description" content="I dream of painting and then I paint my dream." />
+<link rel="icon" href="/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
 <script type="text/javascript"
   src="https://cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
-<script>
-var c = {
-    name: '',
-    url: ''
-}
-</script>
+
+  <title>
+浅析RTB中的竞价策略 | Youmi Tech Blog.
+</title>
 </head>
+
 <body>
 
 <div class="header">
@@ -29,22 +28,30 @@ var c = {
         <p>I dream of painting and then I paint my dream.</p>
     </div>
     <div class="menu">
-        <a href="/">home</a>
-        <a href="/archives">archives</a>
+    
+    <a href="/">home</a>
+    
+    <a href="/archives">archives</a>
+    
     </div>
 </div>
+
 
 
 <div id="post" class="center">
 
     <h1>浅析RTB中的竞价策略</h1>
+
     <p><a href="https://github.com/BaichuanLi">BaichuanLi</a> Posted at Jun 07, 2016 . -
+
+    
     <a href="/category/计算广告/">计算广告</a> -
+    
     </p>
 
     <div class="content"><p>在广告行业中，实时竞价(Real Time Bidding, RTB)是近年来逐渐流行的一种广告采买方式。与传统的合约广告不同，RTB允许广告主对每一个展示机会进行竞价，从而以人群购买取代了广告位购买。需求方平台（Demand Side Platform, DSP）作为广告主的代理，需要在100ms以内对每个广告请求进行决策是否参与竞价，以及如果参与竞价出价多少。</p>
-<h2 id="rtb-">RTB竞价流程</h2>
-<p>下图给出了以某个DSP为视角的RTB的流程图（来自参考文献1）。</p>
+<!-- more -->
+<h2 id="rtb竞价流程">RTB竞价流程</h2><p>下图给出了以某个DSP为视角的RTB的流程图（来自参考文献1）。</p>
 <p><img src="https://cloud.githubusercontent.com/assets/19795120/15852175/ca44376e-2cd2-11e6-90f3-c53e6a46a0b0.png" alt="RTB流程图"></p>
 <p>当一个用户访问了嵌入广告位的网站或者打开了含有广告位的App,该网站或者App会通过供应方平台(Supply-Side Platform, SSP)将广告请求发送给广告交易平台(Ad Exchange, ADX)，进而ADX将广告请求发送给多个DSP。值得注意的事目前国内很多移动流量较大的供应方(比如优酷土豆，今日头条)都是自建ADX,也就省了SSP将广告请求广播到其他ADX这一步。当某个DSP收到广告请求时，首先检索自身的广告推广库，将适合该请求的广告检索出来，一般来说，适合的条件包括：</p>
 <ul>
@@ -53,28 +60,20 @@ var c = {
 <li>该用户之前没推送过该广告或者推送次数不超过N次</li>
 </ul>
 <p>实际上不同的广告推广设定的条件可能差异较大，这里不深入讨论。在广告检索的过程中，一般需要用到数据管理平台(Data Management Platform, DMP)来判断是否满足定向条件。对于每个检索出的候选广告，DSP需要计算其出价，并通过内部竞价选出出价最高的那个广告。如果该广告的出价高于广告请求中附带的底价，则将该广告和出价返回给ADX;否则不响应该竞价请求。</p>
-<h2 id="-">竞价策略</h2>
-<p>DSP的出价是通过竞价策略来实现的，通常的竞价策略包括：单一出价，随机出价，真实出价，受限点击成本出价，线性出价和非线性出价。</p>
-<h3 id="-">定值出价</h3>
-<p>对所有广告请求均出同一个价格。虽然简单粗暴，但不少DSP实际在用。</p>
-<h3 id="-">随机出价</h3>
-<p>在一定出价范围内每次随机出价。</p>
-<h3 id="-">真实出价</h3>
-<p>不考虑预算限制，该策略估算该展示的真实价值，即<code>CVR*CPA</code>。其中<code>CVR</code>为该展示的转化概率，<code>CPA</code>为广告主为一次转化付的价格。<code>CVR</code>一般可以通过历史数据进行估算，也可以用机器学习的方法来预测，不过通常由于数据过于稀疏效果不会很理想。第二高价机制的存在，保证了DSP按照真实价值出价也有套利的机会。</p>
-<h3 id="-">受限点击成本出价</h3>
-<p>在CPC模式下，广告主一般会设定可接受的最高点击成本(<code>mCPC</code>)，这时就可以通过计算<code>mCPC*CTR</code>来出价。如果点击率预估准确，该策略可以保证其支出小于收入。</p>
-<h3 id="-">线性出价</h3>
-<p>在这种策略下，出价与估计的点击率成正比，即$$b(\theta)=b_0*\tfrac{\theta}{\theta_0},$$
+<h2 id="竞价策略">竞价策略</h2><p>DSP的出价是通过竞价策略来实现的，通常的竞价策略包括：单一出价，随机出价，真实出价，受限点击成本出价，线性出价和非线性出价。</p>
+<h3 id="定值出价">定值出价</h3><p>对所有广告请求均出同一个价格。虽然简单粗暴，但不少DSP实际在用。</p>
+<h3 id="随机出价">随机出价</h3><p>在一定出价范围内每次随机出价。</p>
+<h3 id="真实出价">真实出价</h3><p>不考虑预算限制，该策略估算该展示的真实价值，即<code>CVR*CPA</code>。其中<code>CVR</code>为该展示的转化概率，<code>CPA</code>为广告主为一次转化付的价格。<code>CVR</code>一般可以通过历史数据进行估算，也可以用机器学习的方法来预测，不过通常由于数据过于稀疏效果不会很理想。第二高价机制的存在，保证了DSP按照真实价值出价也有套利的机会。</p>
+<h3 id="受限点击成本出价">受限点击成本出价</h3><p>在CPC模式下，广告主一般会设定可接受的最高点击成本(<code>mCPC</code>)，这时就可以通过计算<code>mCPC*CTR</code>来出价。如果点击率预估准确，该策略可以保证其支出小于收入。</p>
+<h3 id="线性出价">线性出价</h3><p>在这种策略下，出价与估计的点击率成正比，即$$b(\theta)=b_0*\tfrac{\theta}{\theta_0},$$
 其中\(\theta_0，\theta\)分别是该广告的平均点击率以及该请求下预测的点击率，\(b_0\)是这个广告推广的基础出价，可以通过<code>mCPC</code>和\(\theta_0\)来确定。</p>
-<h3 id="-">非线性出价</h3>
-<p>该出价模型在有预算限制的情况下最大化收益(点击数或转化数)。假设某个广告推广在一定时期\(T\)内总共符合其定向的广告请求共\(N_T\)个，每个广告请求特征向量为\(\mathbf{x}\),满足定向条件的\(\mathbf{x}\)先验为\(p_x(\mathbf{x})\)。给定收益函数\(\theta(\mathbf{x})\)，竞价函数\(b(\theta(\mathbf{x}))\)，竞价成功率函数\(w(b(\theta(\mathbf{x})))\)，假设该广告的预算为\(B\), 则优化目标可以写成$$\mathop{\text{arg max}}_{b()}N_T\int_{\mathbf{x}}\theta(\mathbf{x})w(b(\theta(\mathbf{x})))p_x(\mathbf{x})d\mathbf{x}$$
+<h3 id="非线性出价">非线性出价</h3><p>该出价模型在有预算限制的情况下最大化收益(点击数或转化数)。假设某个广告推广在一定时期\(T\)内总共符合其定向的广告请求共\(N_T\)个，每个广告请求特征向量为\(\mathbf{x}\),满足定向条件的\(\mathbf{x}\)先验为\(p_x(\mathbf{x})\)。给定收益函数\(\theta(\mathbf{x})\)，竞价函数\(b(\theta(\mathbf{x}))\)，竞价成功率函数\(w(b(\theta(\mathbf{x})))\)，假设该广告的预算为\(B\), 则优化目标可以写成$$\mathop{\text{arg max}}_{b()}N_T\int_{\mathbf{x}}\theta(\mathbf{x})w(b(\theta(\mathbf{x})))p_x(\mathbf{x})d\mathbf{x}$$
 $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{x})))p_x(\mathbf{x})d\mathbf{x} \leq B.$$</p>
 <p>由于\(\textbf{x}\)和\(\theta(\textbf{x})\)的关系是确定的，$$p_\theta(\theta(\mathbf{x}))=\frac{p_x(\mathbf{x})}{\parallel\triangledown\theta(\mathbf{x})\parallel}.$$进而可以把优化目标写成$$\mathop{\text{arg max}}_{b()}N_T\int_{\theta}\theta w(b(\theta))p_\theta(\theta)d\theta$$</p>
 <p>$$\text{subject to }N_T\int_{\theta}b(\theta)w(b(\theta))p_\theta(\theta)d\theta \leq B.$$ 利用拉格朗日乘子法，目标函数变为$$\mathcal{L}(b(\theta),\lambda)=\int_{\theta}\theta w(b(\theta))p_\theta(\theta)d\theta-\lambda\int_{\theta}b(\theta)w(b(\theta))p_\theta(\theta)d\theta+\frac{\lambda B}{N_T},$$其中\(\lambda\)为拉格朗日乘子。通过对\(b(\theta)\)求偏导并令其等于零，可以得到$$\lambda w(b(\theta))=[\theta-\lambda b(\theta)]\frac{\partial w(b(\theta))}{\partial b(\theta)}.$$</p>
 <p>竞价成功率与出价的函数可以表示为$$w(b(\theta))=\frac{b(\theta)}{b(\theta)+c},$$其中\(c\)是一个常量。将此函数代入上式，得到$$b_{opt}(\theta)=\sqrt{\frac{c}{\lambda}\theta+c^2}-c.$$可以看出，最优的出价是收益的一个非线性函数。</p>
 <p>该策略的出价函数中有两个参数，分别是\(c\)和\(\lambda\)。其中\(c\)可以通过一段时间的盲投（比如利用随机出价策略），得到多个出价与成功率的离散点，再利用最小二乘法拟合曲线得到；\(\lambda\)可以通过网格遍历的方法，利用历史日志计算不同取值时的收益，从中选取最高的那个。</p>
-<h2 id="-">不同竞价策略的对比</h2>
-<table>
+<h2 id="不同竞价策略的对比">不同竞价策略的对比</h2><table>
 <thead>
 <tr>
 <th style="text-align:left">竞价策略</th>
@@ -117,8 +116,7 @@ $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{
 </tbody>
 </table>
 <p>上表给出了不同竞价策略的对比，可以看出非线性出价综合考虑了预算限制、竞价请求的估值、以及竞价成功率这些因素，是最接近实际情况的一种策略。论文[1]中的离线和在线实验结果也证明了其有效性。</p>
-<h2 id="-">参考文献</h2>
-<ol>
+<h2 id="参考文献">参考文献</h2><ol>
 <li>Zhang, W., Yuan, S., &amp; Wang, J. (2014, August). Optimal real-time bidding for display advertising. In Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 1077-1086). ACM.</li>
 <li>Zhang, W., Yuan, S., Wang, J., &amp; Shen, X. (2014). Real-time bidding benchmarking with iPinYou dataset. arXiv preprint arXiv:1407.7073.</li>
 <li>Zhang, W., &amp; Wang, J. (2015, August). Statistical Arbitrage Mining for Display Advertising. In Proceedings of the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (pp. 1465-1474). ACM.</li>
@@ -126,7 +124,18 @@ $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{
 </ol>
 </div>
 
-    <div class="label">
+    
+
+    <div class="relate">
+    
+    
+    <a rel="prev" href="/2016/07/163347168.html">← 卷积神经网络的数学推导</a>
+    
+
+    
+    
+    <a rel="next" href="/2016/04/150658153.html">Flume 实时收集日志 →</a>
+    
     </div>
 
     <div class="comment_list hide" id="disqus_thread"></div>
@@ -136,13 +145,19 @@ $$\text{subject to }N_T\int_{\mathbf{x}}b(\theta(\mathbf{x}))w(b(\theta(\mathbf{
 
 </div>
 
+
 <div class="footer">
     <div class="center">
-        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+        &copy; 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
     </div>
 </div>
 
 
+
+
+
 <script src="/js/comment.js"></script>
+
+
 </body>
 </html>

@@ -1,26 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="google" content="notranslate" />
-<link rel="icon" href="/images/icon.png" />
-<link rel="stylesheet" href="/css/style.css" />
+<!doctype html>
+<html>
 
-<title>卷积神经网络的数学推导 - Youmi Tech Blog. </title>
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="keywords" content="" />
+<meta name="description" content="I dream of painting and then I paint my dream." />
+<link rel="icon" href="/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
 <script type="text/javascript"
   src="https://cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
-<script>
-var c = {
-    name: '',
-    url: ''
-}
-</script>
+
+  <title>
+卷积神经网络的数学推导 | Youmi Tech Blog.
+</title>
 </head>
+
 <body>
 
 <div class="header">
@@ -29,30 +28,35 @@ var c = {
         <p>I dream of painting and then I paint my dream.</p>
     </div>
     <div class="menu">
-        <a href="/">home</a>
-        <a href="/archives">archives</a>
+    
+    <a href="/">home</a>
+    
+    <a href="/archives">archives</a>
+    
     </div>
 </div>
+
 
 
 <div id="post" class="center">
 
     <h1>卷积神经网络的数学推导</h1>
+
     <p><a href="https://github.com/idiomer">idiomer</a> Posted at Jul 01, 2016 . -
+
+    
     <a href="/category/神经网络/">神经网络</a> -
+    
     </p>
 
     <div class="content"><p>  卷积神经网络（Convolutional Neural Network, CNN）是一种前馈神经网络，每个神经元都只影响邻层的一部分神经元，具有局部感受野，因此，网络具有极强的捕捉局部特征的能力；另一方面，通过权值共享和池化，显著地降低了网络的计算复杂度，使得CNN得到广泛应用。CNN是图像分类和语音识别领域的杰出算法，也是目前大部分计算机视觉系统的核心技术，从facebook的图像自动标签到自动驾驶汽车，乃至AlphaGo都在使用。与此同时，近两年CNN逐渐被应用于NLP任务，在sentence classification中，基于CNN的模型取得了非常显著的效果。</p>
+<!-- more -->
 <p>  本文假设读者比较熟悉神经网络的相关知识，特别是反向传播算法的过程，从数学推导的角度来理解CNN的内部原理。</p>
-<h2 id="1-">1 神经网络</h2>
-<p>  神经网络是由多个感知器（神经元）构成的全连接的网络，本质上来说，这样的连接只是简单的线性加权和而已，所以每个神经元加上同一个非线性函数（如sigmoid，tanh等），使得网络能拟合非线性。通常，称这个非线性函数为激活函数。一个典型的全连接神经网络如下所示：
+<h2 id="1-神经网络">1 神经网络</h2><p>  神经网络是由多个感知器（神经元）构成的全连接的网络，本质上来说，这样的连接只是简单的线性加权和而已，所以每个神经元加上同一个非线性函数（如sigmoid，tanh等），使得网络能拟合非线性。通常，称这个非线性函数为激活函数。一个典型的全连接神经网络如下所示：
 <img src="https://cloud.githubusercontent.com/assets/17400651/16607019/836c924c-436f-11e6-8f0c-552b2487a39d.png" alt="nn"></p>
-<h3 id="1-1-">1.1 前向传导</h3>
-<p>上图中，每个圆圈代表一个神经元（标上“+1”的是偏置节点，不算入神经元），从神经元引出的连接是参数矩阵w，从偏置节点引出的是参数向量b。w和b是整个网络最重要的参数。</p>
-<h4 id="1-1-1-">1.1.1 输入层</h4>
-<p>假设输入$x=[x_1, x_2, x_3]$，令第一层的输入$z^{(1)}$和激活输出$a^{(1)}$相等，即$z^{(1)} = a^{(1)} = x$。</p>
-<h4 id="1-1-2-">1.1.2 隐藏层</h4>
-<p>第二层的输入为：
+<h3 id="11-前向传导">1.1 前向传导</h3><p>上图中，每个圆圈代表一个神经元（标上“+1”的是偏置节点，不算入神经元），从神经元引出的连接是参数矩阵w，从偏置节点引出的是参数向量b。w和b是整个网络最重要的参数。</p>
+<h4 id="111-输入层">1.1.1 输入层</h4><p>假设输入$x=[x_1, x_2, x_3]$，令第一层的输入$z^{(1)}$和激活输出$a^{(1)}$相等，即$z^{(1)} = a^{(1)} = x$。</p>
+<h4 id="112-隐藏层">1.1.2 隐藏层</h4><p>第二层的输入为：
 $$z^{(2)}_1 = a^{(1)}_1 w^{(2)}_{11} + a^{(1)}_2 w^{(2)}_{12} + a^{(1)}_3 w^{(2)}_{13} + b^{(2)}_1\\
 z^{(2)}_2 = a^{(1)}_1 w^{(2)}_{21} + a^{(1)}_2 w^{(2)}_{22} + a^{(1)}_3 w^{(2)}_{23} + b^{(2)}_2\\
 z^{(2)}_3 = a^{(1)}_1 w^{(2)}_{31} + a^{(1)}_2 w^{(2)}_{32} + a^{(1)}_3 w^{(2)}_{33} + b^{(2)}_3$$
@@ -62,20 +66,17 @@ $$ z^{(2)} = w^{(2)}a^{(1)} + b^{(2)} $$
 <p>第二层的激活输出为：
 $$ a^{(2)} = f(z^{(2)}) $$
 其中，$f$为激活函数，$a^{(2)} \in R^{3 \times 1}$。</p>
-<h4 id="1-1-3-">1.1.3 输出层</h4>
-<p>第三层输入：
+<h4 id="113-输出层">1.1.3 输出层</h4><p>第三层输入：
 $$ z^{(3)} = w^{(3)}a^{(2)} + b^{(3)} $$
 其中，$ z^{(3)} \in R^{1\times 1}, w^{(3)} \in R^{1\times 3},  a^{(2)} \in R^{3\times 1}, b^{(3)} \in R^{1\times 1}$</p>
 <p>第三层激活输出：
 $$ a^{(3)} = f(z^{(3)}) $$
 其中，$f$为激活函数，$a^{(3)} \in R^{1 \times 1}$。特别地，记$a^{(3)}$为$h_{w,b}(x)$</p>
-<h4 id="1-1-4-">1.1.4 前向传导</h4>
-<p>因此，前向传导可以表示为：
+<h4 id="114-前向传导">1.1.4 前向传导</h4><p>因此，前向传导可以表示为：
 $$z^{(l+1)} = w^{(l+1)}a^{(l)}+b^{(l+1)}\\
 a^{(l+1)} = f(z^{(l+1)})$$
 其中，$l=1,2,...,L-1$，$L$为神经网络的层数。</p>
-<h3 id="1-2-">1.2 反向传播</h3>
-<p>假设神经网络的代价函数为：
+<h3 id="12-反向传播">1.2 反向传播</h3><p>假设神经网络的代价函数为：
 $$J(w,b)=\frac{1}{m} \sum_{i=1}^{m}J(w,b;x^{(i)},y^{(i)}) \\ 其中: J(w,b;x^{(i)},y^{(i)})=\frac{1}{2}(y^{(i)}-h_{w,b}(x^{(i)}))^2$$
 即，网络的整体代价为所有训练样例的平均代价。</p>
 <p>此处我们是要找到最佳的w,b使得$J(w,b)$即代价函数的值最小，因此$J$是关于$w,b$的函数，其中$w,b$也不是标量，是很多$w_{ij},b_i$的集合。代价函数中没有显式的看到$w,b$的表达式，那是因为用简洁的$h_{w,b}(x^{(i)})$替换了。因此要强调的是：$J$的展开表达式（假设能展开）中只有$w,b$才是变量，其他都是已知的。</p>
@@ -95,9 +96,7 @@ $$\delta^{(L)} = (y-h(x))\cdot a^{(L)} \\
 $$
 所以：
 $$ \frac{\partial J}{\partial w^{(l)}}= \frac{\partial J}{\partial z^{(l)}}\cdot \frac{\partial z^{(l)}}{\partial w^{(l)}}=\delta^{(l)}\cdot (a^{(l-1)})^T \\ \frac{\partial J}{\partial b^{(l)}}= \frac{\partial J}{\partial z^{(l)}}\cdot \frac{\partial z^{(l)}}{\partial b^{(l)}}=\delta^{(l)} , (l=2,...,L)$$</p>
-<h2 id="2-">2 卷积神经网络</h2>
-<h3 id="2-1-">2.1 卷积</h3>
-<p>假设有矩阵$A_{3\times 3}$和$B_{2\times2}$：
+<h2 id="2-卷积神经网络">2 卷积神经网络</h2><h3 id="21-卷积">2.1 卷积</h3><p>假设有矩阵$A_{3\times 3}$和$B_{2\times2}$：
 \begin{equation*}
 A=\left[\begin{array}{ccc}
 1 &amp; 2 &amp; 3\\
@@ -117,8 +116,7 @@ C=\begin{bmatrix}
 \end{bmatrix}
 \end{equation*}
 因此，假设 A 的大小为$h_a\times w_a$，B的大小为$h_b\times w_b$（其中$h_a\geq h_b, w_a\geq w_b$），则C的大小为$(h_a-h_b+1)\times(w_a-w_b+1)$，矩阵B称为卷积核或滤波器(filter)，矩阵C称为特征图(feature map)。上述运算称为窄卷积，若矩阵A预先上下各添加$h_b-1$行零向量，左右各添加$w_b-1$列零向量，再与B卷积，则称为宽卷积。窄卷积和宽卷积分别用conv2(A, B, &#39;valid&#39;)和conv2(A, B, &#39;full&#39;)表示。</p>
-<h3 id="2-2-">2.2 池化</h3>
-<p>假设矩阵C为$6\times4$的矩阵，池化窗口为$2\times2$，则按照池化窗口大小将矩阵C分割成6块不相交的$2\times2$小矩阵，对对每个块中的所有元素做求和平均操作，称为平均池化，取最大
+<h3 id="22-池化">2.2 池化</h3><p>假设矩阵C为$6\times4$的矩阵，池化窗口为$2\times2$，则按照池化窗口大小将矩阵C分割成6块不相交的$2\times2$小矩阵，对对每个块中的所有元素做求和平均操作，称为平均池化，取最大
 值则称为最大池化。得到的矩阵S称为pool map。如：
 \begin{equation*}
 C=\begin{bmatrix}
@@ -149,11 +147,9 @@ S=\begin{bmatrix}
 由于池化也称为下采样，用$S=down(C)$表示，为了使得池化层具有可学习性，一般令：
 $$S = \beta down(C) + b$$
 其中，$\beta$和$b$为标量参数。</p>
-<h3 id="2-3-">2.3 卷积神经网络</h3>
-<p>卷积神经网络是权值共享，非全连接的神经网络。以2个卷积层和2个池化层的卷积神经网络为例，其结构图如下：
+<h3 id="23-卷积神经网络">2.3 卷积神经网络</h3><p>卷积神经网络是权值共享，非全连接的神经网络。以2个卷积层和2个池化层的卷积神经网络为例，其结构图如下：
 <img src="https://cloud.githubusercontent.com/assets/17400651/16607038/a7b9429e-436f-11e6-85c5-ceab16a79342.jpg" alt="cnn"></p>
-<h4 id="2-3-1-">2.3.1 前向传导</h4>
-<p><strong>C1层：</strong>卷积神经网络的输入是$28\times28$的矩阵A，经过$F_1$个$5\times5$的卷积核$K_i^1(i=1,2,...,F_1)$的卷积生成$F_1$个$24\times24$大小的feature maps：
+<h4 id="231-前向传导">2.3.1 前向传导</h4><p><strong>C1层：</strong>卷积神经网络的输入是$28\times28$的矩阵A，经过$F_1$个$5\times5$的卷积核$K_i^1(i=1,2,...,F_1)$的卷积生成$F_1$个$24\times24$大小的feature maps：
 $$C_i^1 = conv2(A, K_i^1, &#39;valid&#39;) + b_i^1 \\
 u_i^1 = C_i^1 \\
 a_i^1 = f(u_i^1)
@@ -174,8 +170,7 @@ u_i^4 = S_i^4 \\
 a_i^4 = f(u_i^4)
 $$</p>
 <p><strong>全连接层：</strong>最后，将$a_i^4(i=1,2,...,F_3)$顺序展开成向量，并有序连接成一个长向量，作为全连接层网络的输入。</p>
-<h4 id="2-3-2-">2.3.2 反向传播</h4>
-<p>$\quad$卷积神经网络的反向传播本质上是和BP神经网络是一致的，区别在于全连接和非全连接：在反向求导时，卷积神经网络要明确参数连接了哪些神经元；而全连接的普通神经网络中的相邻两层的神经元都是与另一层的所有神经元相连的，因此反向求导时非常简单。</p>
+<h4 id="232-反向传播">2.3.2 反向传播</h4><p>$\quad$卷积神经网络的反向传播本质上是和BP神经网络是一致的，区别在于全连接和非全连接：在反向求导时，卷积神经网络要明确参数连接了哪些神经元；而全连接的普通神经网络中的相邻两层的神经元都是与另一层的所有神经元相连的，因此反向求导时非常简单。</p>
 <p><strong>全连接层</strong>
 $\quad$全连接层的反向求导是与普通神经网络的反向求导是一致的：
 $$\frac{\partial J}{\partial w^{(l)}} = \delta^{(l)}(a^{(l-1)})^T \\
@@ -211,15 +206,22 @@ $$\delta_i^{(l)} = \sum_{j=1}^{N_l}a_i^{(l)} \circ conv2(\delta_{j}^{(l+1)}, K_{
 \frac{\partial J}{\partial \beta_i^{(l)}} = \sum_{s,t}( \delta_i^{(l)} \circ d_i^{(l-1)} )_{st} $$
 其中，$(*)_{st}$遍历$*$的所有元素，$d_i^{(l-1)} = down(a_i^{(l-1)})$。</li>
 </ol>
-<h2 id="-">参考资料</h2>
-<ol>
+<h2 id="参考资料">参考资料</h2><ol>
 <li><a href="http://deeplearning.stanford.edu/wiki/index.php/UFLDL_Tutorial">UFLDL Tutorial</a></li>
 <li><a href="http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf">GradientBased Learning Applied to Document Recognition</a></li>
 <li><a href="http://cogprints.org/5869/1/cnn_tutorial.pdf">Notes on Convolutional Neural Networks</a></li>
 </ol>
 </div>
 
-    <div class="label">
+    
+
+    <div class="relate">
+    
+
+    
+    
+    <a rel="next" href="/2016/06/158883267.html">浅析RTB中的竞价策略 →</a>
+    
     </div>
 
     <div class="comment_list hide" id="disqus_thread"></div>
@@ -229,13 +231,19 @@ $$\delta_i^{(l)} = \sum_{j=1}^{N_l}a_i^{(l)} \circ conv2(\delta_{j}^{(l+1)}, K_{
 
 </div>
 
+
 <div class="footer">
     <div class="center">
-        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+        &copy; 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
     </div>
 </div>
 
 
+
+
+
 <script src="/js/comment.js"></script>
+
+
 </body>
 </html>

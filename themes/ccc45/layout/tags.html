@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Tags | {{ data.config.title }}
+{% endblock %}
+
+{% block content %}
+<div class="center categories">
+
+    <h2 class="tag">Tas</h2>
+
+    {% for tag in tags %}
+    <p><a href="{{ tag.url }}">{{ tag.name }}</a><span>({{ tag.posts.length }})</span></p>
+    {% endfor %}
+
+</div>
+{% endblock %}

@@ -1,14 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="google" content="notranslate" />
-<link rel="icon" href="/images/icon.png" />
-<link rel="stylesheet" href="/css/style.css" />
+<!doctype html>
+<html>
 
-<title> 运维 - Youmi Tech Blog. </title>
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="keywords" content="" />
+<meta name="description" content="I dream of painting and then I paint my dream." />
+<link rel="icon" href="/icon.png" />
+<link rel="stylesheet" href="/css/style.css" />
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+  src="https://cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  <title>
+运维 | Youmi Tech Blog.
+</title>
 </head>
+
 <body>
 
 <div class="header">
@@ -17,27 +28,34 @@
         <p>I dream of painting and then I paint my dream.</p>
     </div>
     <div class="menu">
-        <a href="/">home</a>
-        <a href="/archives">archives</a>
+    
+    <a href="/">home</a>
+    
+    <a href="/archives">archives</a>
+    
     </div>
 </div>
+
 
 
 <div id="posts" class="center">
 
-    <h2 class="tag">Category : <span>#运维</span></h2>
+    <h2 class="tag">Category : <span>运维</span></h2>
 
     <ul>
+    
+    
         <li>
 
         <div class="post">
             <h2><a href="/2016/04/150658153.html">Flume 实时收集日志</a></h2>
-            <p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。
+            <p class="time">Apr 25, 2016</p>
 
-现实中，我们就碰到了这样的需求：实时汇总线上多台服务器的 Nginx 日志。Flume 立功了。
-
-</p>
-            <p class="time">Apr 24, 2016</p>
+            
+            <div class="summary"><p>在分布式系统中，各个机器都有程序运行的本地日志，有时为了分析需求，不得不这些分散的日志汇总需求，相信很多人会选择 Rsync，Scp 之类，但它们的实时性不强，而且也会带来名字冲突的问题。扩展性差强人意，一点也不优雅。</p>
+<p>现实中，我们就碰到了这样的需求：实时汇总线上多台服务器的 Nginx 日志。Flume 立功了。</p>
+</div>
+            
         </div>
 
         <a class="author" href="https://github.com/zheng-ji" target="_blank">
@@ -45,14 +63,18 @@
         </a>
 
         </li>
+    
+    
         <li>
 
         <div class="post">
             <h2><a href="/2016/04/145599925.html">Ansible Dynamic Inventory 的使用</a></h2>
-            <p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 `/etc/ansible/hosts` 文件里面配置固定的组合机器IP，并给他起组的别名，执行 `ansible` 脚本便可以通过别名找到相应的机器。
+            <p class="time">Apr 06, 2016</p>
 
-</p>
-            <p class="time">Apr 04, 2016</p>
+            
+            <div class="summary"><p>Ansible 在使用的过程中，如果机器数量比较固定，且变更不多的情况下，可在 <code>/etc/ansible/hosts</code> 文件里面配置固定的组合机器IP，并给他起组的别名，执行 <code>ansible</code> 脚本便可以通过别名找到相应的机器。</p>
+</div>
+            
         </div>
 
         <a class="author" href="https://github.com/zheng-ji" target="_blank">
@@ -60,21 +82,31 @@
         </a>
 
         </li>
+    
     </ul>
 
+    
+
 <div id="pagination">
-    <a rel="prev" class="hide" href="">← Newer Posts</a>
-    <a rel="next" class="hide" href="">Older Posts →</a>
+    
+
+    
+
+    
 </div>
 
 
+
 </div>
+
 
 <div class="footer">
     <div class="center">
-        © 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
+        &copy; 2016 Youmi Tech Blog. . <a target="_blank" href="https://github.com/AcyOrt/acyort">AcyOrt</a> . <a target="_blank" href="/rss.xml">RSS</a>
     </div>
 </div>
+
+
 
 
 </body>

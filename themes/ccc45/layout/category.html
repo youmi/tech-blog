@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+{% import 'partials/pagination.html' as pagination %}
+
+{% block title %}
+{{ category.heading }} | {{ data.config.title }}
+{% endblock %}
+
+{% block content %}
+<div id="posts" class="center">
+
+    <h2 class="tag">Category : <span>{{ category.heading }}</span></h2>
+
+    <ul>
+    {% for id in category.posts %}
+    {% set post = helper.post(id) %}
+        <li>
+
+        <div class="post">
+            <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+            <p class="time">{{ helper.time(post.updated, 'MMM DD, YYYY') }}</p>
+
+            {% if post.summary %}
+            <div class="summary">{% autoescape false %}{{ post.summary }}{% endautoescape %}</div>
+            {% endif %}
+        </div>
+
+        <a class="author" href="{{ post.author.url }}" target="_blank">
+            <img src="{{ post.author.avatar }}" />
+        </a>
+
+        </li>
+    {% endfor %}
+    </ul>
+
+    {{ pagination.render(category) }}
+
+</div>
+{% endblock %}

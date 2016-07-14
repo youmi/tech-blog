@@ -1,0 +1,77 @@
+
+# site
+title: Youmi Tech Blog.
+description: I dream of painting and then I paint my dream. 
+keywords: 
+rss: rss.xml
+favicon: /icon.png
+
+# site url. you can set as 'http://yoursite.com/child' if need
+# please add 'http://' or 'https://'
+url: http://tech.youmi.net
+
+# comment
+comment:
+#    disqus:
+#    duoshuo:
+
+# theme
+theme: ccc45
+
+# pagination
+per_page: 10
+archives_per_page: 30
+
+#menu
+menu:
+    home: /
+    archives: /archives
+
+# category
+default_category: uncategorized
+
+# html output directory or child directory e.g. 'child'
+public_dir: /
+
+# category directory
+category_dir:
+
+# tag directory
+tag_dir:
+
+# site content issue
+# username/repository
+issue_repo: youmi/tech-blog
+
+# thumbnail mode 
+# 1: use the first image as thumbnail and remove the image
+# 2: use the first image as thumbnail but not remove the image
+thumbnail_mode: 2
+
+# thumbnail size
+# whether to get the thumbnail size
+thumbnail_size: false
+
+# site post authors filter
+authors:
+  - LoeiFy
+  - divisoryang
+  - ruitao
+  - csyangchen
+  - zheng-ji
+  - BaichuanLi 
+  - idiomer
+
+# custom fields
+customs: 
+#    - test
+#    - title
+
+# GitHub access token(Optional)
+# token should be separated by whitespace if you push this file to GitHub 
+# token: sd46a6d65a asd8sdbn
+
+# dev mode
+# boolean / string
+# you can set test json path: test/test.json 
+dev: false
